@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -36,6 +35,7 @@ import {
   Loader2,
   Building,
 } from 'lucide-react'
+import { DEMO_MODE, demoApplications } from '@/lib/demo-data'
 import type { SchoolApplication } from '@/types/database'
 
 type ApplicationWithAddress = SchoolApplication & {
@@ -44,6 +44,7 @@ type ApplicationWithAddress = SchoolApplication & {
     city: string
     state: string
     zipCode: string
+    zip?: string
   }
 }
 
@@ -59,6 +60,18 @@ export default function ApplicationsPage() {
 
   const fetchApplications = async () => {
     try {
+      if (DEMO_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 600))
+        const parsed = demoApplications.map(app => ({
+          ...app,
+          parsedAddress: app.address as ApplicationWithAddress['parsedAddress']
+        })) as ApplicationWithAddress[]
+        setApplications(parsed)
+        setIsLoading(false)
+        return
+      }
+
+      const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { data, error } = await supabase
         .from('school_applications')
@@ -86,6 +99,17 @@ export default function ApplicationsPage() {
   const updateApplicationStatus = async (id: string, status: 'approved' | 'rejected') => {
     setIsUpdating(true)
     try {
+      if (DEMO_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        setApplications(prev => prev.map(app =>
+          app.id === id ? { ...app, status } : app
+        ))
+        setSelectedApplication(null)
+        setIsUpdating(false)
+        return
+      }
+
+      const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { error } = await supabase
         .from('school_applications')
@@ -153,7 +177,7 @@ export default function ApplicationsPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="p-8 space-y-6">
         <div>
           <Skeleton className="h-8 w-48 mb-2" />
           <Skeleton className="h-4 w-64" />
@@ -168,7 +192,7 @@ export default function ApplicationsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">School Applications</h1>
@@ -195,6 +219,12 @@ export default function ApplicationsPage() {
         </Card>
       ) : (
         <Card>
+          <CardHeader>
+            <CardTitle>All Applications</CardTitle>
+            <CardDescription>
+              {applications.length} total applications
+            </CardDescription>
+          </CardHeader>
           <CardContent className="p-0">
             <Table>
               <TableHeader>
@@ -300,7 +330,7 @@ export default function ApplicationsPage() {
                     <div>
                       <p>{selectedApplication.parsedAddress?.street}</p>
                       <p>
-                        {selectedApplication.parsedAddress?.city}, {selectedApplication.parsedAddress?.state} {selectedApplication.parsedAddress?.zipCode}
+                        {selectedApplication.parsedAddress?.city}, {selectedApplication.parsedAddress?.state} {selectedApplication.parsedAddress?.zipCode || selectedApplication.parsedAddress?.zip}
                       </p>
                     </div>
                   </div>

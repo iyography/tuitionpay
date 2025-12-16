@@ -15,7 +15,7 @@ import {
   Mail,
   MapPin,
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { DEMO_MODE, getDemoSchool, demoAdmin } from '@/lib/demo-data'
 import type { School } from '@/types/database'
 
 interface OnboardingStep {
@@ -35,9 +35,18 @@ export default function SettingsPage() {
   }, [])
 
   const fetchSchoolData = async () => {
-    const supabase = createClient()
-
     try {
+      if (DEMO_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        const demoSchool = getDemoSchool(demoAdmin.school_id)
+        setSchool(demoSchool as School)
+        setIsLoading(false)
+        return
+      }
+
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
@@ -100,7 +109,7 @@ export default function SettingsPage() {
 
   const onboardingSteps = getOnboardingSteps()
   const completedSteps = onboardingSteps.filter((s) => s.completed).length
-  const onboardingProgress = (completedSteps / onboardingSteps.length) * 100
+  const onboardingProgress = onboardingSteps.length > 0 ? (completedSteps / onboardingSteps.length) * 100 : 0
 
   if (isLoading) {
     return (
@@ -221,7 +230,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {onboardingSteps.map((step, index) => (
+                {onboardingSteps.map((step) => (
                   <div
                     key={step.id}
                     className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${

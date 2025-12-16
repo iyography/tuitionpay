@@ -26,8 +26,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Pencil, Trash2, CreditCard, Search } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { Plus, Pencil, Trash2, Search } from 'lucide-react'
+import { DEMO_MODE, demoCreditCards } from '@/lib/demo-data'
 import type { CreditCard as CreditCardType } from '@/types/database'
 
 export default function CardsManagementPage() {
@@ -72,16 +72,29 @@ export default function CardsManagementPage() {
   }, [cards, searchTerm])
 
   const fetchCards = async () => {
-    const supabase = createClient()
-    const { data } = await supabase
-      .from('credit_cards')
-      .select('*')
-      .order('issuer', { ascending: true })
+    try {
+      if (DEMO_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        setCards(demoCreditCards as CreditCardType[])
+        setIsLoading(false)
+        return
+      }
 
-    if (data) {
-      setCards(data)
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { data } = await supabase
+        .from('credit_cards')
+        .select('*')
+        .order('issuer', { ascending: true })
+
+      if (data) {
+        setCards(data)
+      }
+    } catch (error) {
+      console.error('Error fetching cards:', error)
+    } finally {
+      setIsLoading(false)
     }
-    setIsLoading(false)
   }
 
   const openDialog = (card?: CreditCardType) => {
@@ -123,7 +136,6 @@ export default function CardsManagementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const supabase = createClient()
 
     const cardData = {
       card_name: formData.card_name,
@@ -140,6 +152,30 @@ export default function CardsManagementPage() {
       is_active: formData.is_active,
     }
 
+    if (DEMO_MODE) {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      if (editingCard) {
+        setCards(prev => prev.map(c =>
+          c.id === editingCard.id ? { ...c, ...cardData } as CreditCardType : c
+        ))
+      } else {
+        const newCard = {
+          id: `card-${Date.now()}`,
+          ...cardData,
+          category_bonuses: null,
+          application_url: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        } as CreditCardType
+        setCards(prev => [...prev, newCard])
+      }
+      setIsDialogOpen(false)
+      return
+    }
+
+    const { createClient } = await import('@/lib/supabase/client')
+    const supabase = createClient()
+
     if (editingCard) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from('credit_cards') as any)
@@ -155,6 +191,14 @@ export default function CardsManagementPage() {
   }
 
   const toggleCardStatus = async (card: CreditCardType) => {
+    if (DEMO_MODE) {
+      setCards(prev => prev.map(c =>
+        c.id === card.id ? { ...c, is_active: !c.is_active } : c
+      ))
+      return
+    }
+
+    const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase.from('credit_cards') as any)
@@ -166,6 +210,12 @@ export default function CardsManagementPage() {
   const deleteCard = async (cardId: string) => {
     if (!confirm('Are you sure you want to delete this card?')) return
 
+    if (DEMO_MODE) {
+      setCards(prev => prev.filter(c => c.id !== cardId))
+      return
+    }
+
+    const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase.from('credit_cards') as any).delete().eq('id', cardId)

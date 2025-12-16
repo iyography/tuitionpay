@@ -23,12 +23,18 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Download, Search, Filter } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import type { Payment } from '@/types/database'
+import { DEMO_MODE, getDemoTransactionsForSchool, demoAdmin } from '@/lib/demo-data'
 
-interface TransactionWithStudent extends Payment {
+interface TransactionWithStudent {
+  id: string
   student_name?: string
   parent_email?: string
+  amount: number
+  helcim_transaction_id?: string | null
+  card_last_four?: string | null
+  processing_fee?: number | null
+  status: string
+  created_at: string
 }
 
 export default function TransactionsPage() {
@@ -48,9 +54,28 @@ export default function TransactionsPage() {
   }, [transactions, searchTerm, statusFilter, dateFilter])
 
   const fetchTransactions = async () => {
-    const supabase = createClient()
-
     try {
+      if (DEMO_MODE) {
+        await new Promise(resolve => setTimeout(resolve, 600))
+        const demoTxns = getDemoTransactionsForSchool(demoAdmin.school_id)
+        setTransactions(demoTxns.map(t => ({
+          id: t.id,
+          student_name: t.student_name,
+          parent_email: t.parent_email,
+          amount: t.amount,
+          helcim_transaction_id: t.helcim_transaction_id,
+          card_last_four: t.card_last_four,
+          processing_fee: t.processing_fee,
+          status: t.status,
+          created_at: t.created_at
+        })))
+        setIsLoading(false)
+        return
+      }
+
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
@@ -69,7 +94,6 @@ export default function TransactionsPage() {
         .order('created_at', { ascending: false })
 
       if (data) {
-        // Fetch student info
         const studentIds = [...new Set(data.map(p => p.student_id))]
         const { data: studentsData } = await supabase
           .from('students')
@@ -78,13 +102,17 @@ export default function TransactionsPage() {
 
         const studentMap = new Map(studentsData?.map(s => [s.id, s]) || [])
 
-        const transactionsWithStudents: TransactionWithStudent[] = data.map(p => ({
-          ...p,
+        setTransactions(data.map(p => ({
+          id: p.id,
           student_name: studentMap.get(p.student_id)?.student_name || 'Unknown',
           parent_email: studentMap.get(p.student_id)?.parent_email || '',
-        }))
-
-        setTransactions(transactionsWithStudents)
+          amount: Number(p.amount),
+          helcim_transaction_id: p.helcim_transaction_id,
+          card_last_four: p.card_last_four,
+          processing_fee: p.processing_fee ? Number(p.processing_fee) : null,
+          status: p.status,
+          created_at: p.created_at
+        })))
       }
     } catch (error) {
       console.error('Error fetching transactions:', error)
@@ -96,7 +124,6 @@ export default function TransactionsPage() {
   const filterTransactions = () => {
     let filtered = [...transactions]
 
-    // Search filter
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
       filtered = filtered.filter(
@@ -107,12 +134,10 @@ export default function TransactionsPage() {
       )
     }
 
-    // Status filter
     if (statusFilter !== 'all') {
       filtered = filtered.filter((t) => t.status === statusFilter)
     }
 
-    // Date filter
     if (dateFilter !== 'all') {
       const now = new Date()
       filtered = filtered.filter((t) => {
@@ -309,10 +334,10 @@ export default function TransactionsPage() {
                           {tx.parent_email || 'N/A'}
                         </TableCell>
                         <TableCell className="text-right font-medium">
-                          {formatCurrency(Number(tx.amount))}
+                          {formatCurrency(tx.amount)}
                         </TableCell>
                         <TableCell className="text-right text-muted-foreground">
-                          {formatCurrency(Number(tx.processing_fee || 0))}
+                          {formatCurrency(tx.processing_fee || 0)}
                         </TableCell>
                         <TableCell className="font-mono">
                           {tx.card_last_four ? `****${tx.card_last_four}` : '-'}

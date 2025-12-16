@@ -20,8 +20,8 @@ import {
   CheckCircle,
   Users,
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-import type { Payment, School } from '@/types/database'
+import { DEMO_MODE, getDemoSchool, getDemoMetrics, getDemoTransactionsForSchool, demoAdmin } from '@/lib/demo-data'
+import type { School } from '@/types/database'
 
 interface DashboardMetrics {
   totalPayments: number
@@ -31,8 +31,13 @@ interface DashboardMetrics {
   studentCount: number
 }
 
-interface RecentPayment extends Payment {
+interface RecentPayment {
+  id: string
   student_name?: string
+  amount: number
+  processing_fee: number | null
+  status: string
+  created_at: string
 }
 
 export default function AdminDashboard() {
@@ -46,9 +51,34 @@ export default function AdminDashboard() {
   }, [])
 
   const fetchDashboardData = async () => {
-    const supabase = createClient()
-
     try {
+      if (DEMO_MODE) {
+        // Use demo data
+        await new Promise(resolve => setTimeout(resolve, 800))
+
+        const schoolId = demoAdmin.school_id
+        const demoSchool = getDemoSchool(schoolId)
+        const demoMetrics = getDemoMetrics(schoolId)
+        const transactions = getDemoTransactionsForSchool(schoolId)
+
+        setSchool(demoSchool as School)
+        setMetrics(demoMetrics)
+        setRecentPayments(transactions.slice(0, 10).map(t => ({
+          id: t.id,
+          student_name: t.student_name,
+          amount: t.amount,
+          processing_fee: t.processing_fee,
+          status: t.status,
+          created_at: t.created_at
+        })))
+        setIsLoading(false)
+        return
+      }
+
+      // Real Supabase fetch
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
       // Get current user and their school
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -103,7 +133,6 @@ export default function AdminDashboard() {
         .limit(10)
 
       if (recentData) {
-        // Fetch student names for the payments
         const studentIds = [...new Set(recentData.map(p => p.student_id))]
         const { data: studentsData } = await supabase
           .from('students')
@@ -112,12 +141,14 @@ export default function AdminDashboard() {
 
         const studentMap = new Map(studentsData?.map(s => [s.id, s.student_name]) || [])
 
-        const paymentsWithStudents: RecentPayment[] = recentData.map(p => ({
-          ...p,
+        setRecentPayments(recentData.map(p => ({
+          id: p.id,
           student_name: studentMap.get(p.student_id) || 'Unknown',
-        }))
-
-        setRecentPayments(paymentsWithStudents)
+          amount: Number(p.amount),
+          processing_fee: p.processing_fee ? Number(p.processing_fee) : null,
+          status: p.status,
+          created_at: p.created_at
+        })))
       }
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
@@ -175,6 +206,9 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold">{school?.name || 'Dashboard'}</h1>
         <p className="text-muted-foreground">
           Welcome to your payment dashboard
+          {DEMO_MODE && (
+            <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>
+          )}
         </p>
       </div>
 
@@ -305,9 +339,9 @@ export default function AdminDashboard() {
                       <TableCell>
                         {payment.student_name || 'N/A'}
                       </TableCell>
-                      <TableCell>{formatCurrency(Number(payment.amount))}</TableCell>
+                      <TableCell>{formatCurrency(payment.amount)}</TableCell>
                       <TableCell className="text-muted-foreground">
-                        {formatCurrency(Number(payment.processing_fee || 0))}
+                        {formatCurrency(payment.processing_fee || 0)}
                       </TableCell>
                       <TableCell>{getStatusBadge(payment.status)}</TableCell>
                     </TableRow>

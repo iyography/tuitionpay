@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CreditCard, AlertCircle, Loader2 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { CreditCard, AlertCircle, Loader2, Sparkles } from 'lucide-react'
+import { DEMO_MODE, demoAdmin } from '@/lib/demo-data'
 import Link from 'next/link'
 
 function LoginForm() {
@@ -28,6 +28,26 @@ function LoginForm() {
     setIsLoading(true)
 
     try {
+      if (DEMO_MODE) {
+        // Demo mode - simulate login
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        // Accept demo credentials or any credentials in demo mode
+        if (email === demoAdmin.email || email.includes('@')) {
+          // Store demo session
+          sessionStorage.setItem('demo_admin', JSON.stringify({
+            ...demoAdmin,
+            email: email || demoAdmin.email
+          }))
+          router.push(redirect)
+          return
+        } else {
+          throw new Error('Please enter a valid email address')
+        }
+      }
+
+      // Real Supabase auth
+      const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
 
       const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -46,6 +66,13 @@ function LoginForm() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleDemoLogin = async () => {
+    setIsLoading(true)
+    await new Promise(resolve => setTimeout(resolve, 800))
+    sessionStorage.setItem('demo_admin', JSON.stringify(demoAdmin))
+    router.push(redirect)
   }
 
   return (
@@ -72,6 +99,42 @@ function LoginForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {DEMO_MODE && (
+              <div className="mb-6">
+                <Button
+                  type="button"
+                  onClick={handleDemoLogin}
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading Demo...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Try Demo Dashboard
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  No account needed - explore with sample data
+                </p>
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or sign in with credentials
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {error && (
                 <Alert variant="destructive">
@@ -102,13 +165,19 @@ function LoginForm() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                  required
+                  required={!DEMO_MODE}
                 />
+                {DEMO_MODE && (
+                  <p className="text-xs text-muted-foreground">
+                    Demo mode: any password works
+                  </p>
+                )}
               </div>
 
               <Button
                 type="submit"
                 className="w-full"
+                variant="outline"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -125,8 +194,8 @@ function LoginForm() {
             <div className="mt-6 text-center text-sm text-muted-foreground">
               <p>
                 Not a registered school?{' '}
-                <Link href="/#schools" className="text-primary hover:underline">
-                  Learn about partnering with us
+                <Link href="/partner" className="text-primary hover:underline">
+                  Apply to Partner
                 </Link>
               </p>
             </div>
