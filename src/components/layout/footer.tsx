@@ -1,0 +1,100 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { CreditCard } from 'lucide-react'
+
+export function Footer() {
+  const pathname = usePathname()
+
+  // Don't show footer on admin pages
+  if (pathname?.startsWith('/admin') || pathname === '/login') {
+    return null
+  }
+
+  return (
+    <footer className="border-t bg-gradient-to-b from-muted/30 to-muted/50">
+      <div className="container mx-auto px-6 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-6xl mx-auto">
+          {/* Brand */}
+          <div className="space-y-4 md:col-span-1">
+            <Link href="/" className="flex items-center space-x-3 group">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25">
+                <CreditCard className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-bold text-xl tracking-tight">TuitionPay</span>
+            </Link>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Save 10-12% on private school tuition through optimized credit card rewards.
+            </p>
+          </div>
+
+          {/* Parents */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground">For Parents</h3>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link href="/optimizer" className="text-muted-foreground hover:text-primary transition-colors">
+                  See Your Savings
+                </Link>
+              </li>
+              <li>
+                <Link href="/pay" className="text-muted-foreground hover:text-primary transition-colors">
+                  Make a Payment
+                </Link>
+              </li>
+              <li>
+                <Link href="/#how-it-works" className="text-muted-foreground hover:text-primary transition-colors">
+                  How It Works
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Schools */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground">For Schools</h3>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link href="/partner" className="text-muted-foreground hover:text-primary transition-colors">
+                  Partner With Us
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="text-muted-foreground hover:text-primary transition-colors">
+                  School Portal
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-foreground">Legal</h3>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-16 pt-8 border-t border-border/50 max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+            <p>&copy; {new Date().getFullYear()} TuitionPay.ai. All rights reserved.</p>
+            <p className="text-center md:text-right">
+              Card recommendations are for informational purposes only.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
