@@ -42,3 +42,4 @@ next-env.d.ts
 
 # Sensitive files
 Taylor-Tuition-Pay-m4a-271ce981-a8df.json
+.env*.local
