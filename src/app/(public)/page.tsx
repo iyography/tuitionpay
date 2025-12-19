@@ -156,7 +156,8 @@ export default function HomePage() {
                 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
               >
                 Save{' '}
-                <span className="text-gradient">10-12%</span>
+                <span className="text-gradient">12%</span>
+                {' '}to Save Thousands
                 <br />
                 on Private School Tuition
               </motion.h1>
@@ -170,19 +171,19 @@ export default function HomePage() {
                 Turn your largest annual expense into significant savings.
               </motion.p>
 
-              {/* CTA Buttons */}
+              {/* CTA Buttons - Two Distinct Paths */}
               <motion.div
                 variants={itemVariants}
-                className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                className="flex flex-col sm:flex-row gap-5 justify-center items-center"
               >
-                <Button size="lg" className="h-14 px-8 text-base gap-2 rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300" asChild>
+                <Button size="lg" className="h-16 px-10 text-lg gap-3 rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 font-semibold" asChild>
                   <Link href="/optimizer">
-                    See How Much You Can Save
+                    Find Your Best Card
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="h-14 px-8 text-base rounded-full bg-white/60 backdrop-blur-sm border-white/40 hover:bg-white/80 transition-all duration-300" asChild>
-                  <Link href="/pay">Already Have a Card? Pay Now</Link>
+                <Button size="lg" variant="outline" className="h-16 px-10 text-lg rounded-full bg-white/60 backdrop-blur-sm border-2 border-primary/30 hover:bg-white/80 hover:border-primary/50 transition-all duration-300 font-semibold" asChild>
+                  <Link href="/pay">Pay Your Tuition Now</Link>
                 </Button>
               </motion.div>
 
