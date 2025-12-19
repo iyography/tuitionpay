@@ -17,6 +17,10 @@ import {
   Sparkles,
   Zap,
   PiggyBank,
+  Plane,
+  Banknote,
+  ChevronDown,
+  HelpCircle,
 } from 'lucide-react'
 
 const features = [
@@ -214,6 +218,115 @@ export default function HomePage() {
         </motion.div>
       </section>
 
+      {/* Two Paths Section */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-background to-muted/20 relative">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Two Simple Steps</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              First, discover your best credit card. Then, come back to pay your tuition.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Path 1: Card Optimizer */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.5 }}
+            >
+              <Link href="/optimizer" className="block group">
+                <Card className="h-full border-2 border-primary/20 hover:border-primary/50 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white to-violet-50/50 overflow-hidden relative">
+                  {/* Step Badge */}
+                  <div className="absolute top-4 left-4">
+                    <div className="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
+                      <span>Step 1</span>
+                    </div>
+                  </div>
+                  <CardContent className="p-10 pt-16 text-center">
+                    <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-500 to-purple-600 mb-8 shadow-xl group-hover:scale-110 transition-transform duration-500">
+                      <Sparkles className="h-12 w-12 text-white" />
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold mb-4">Credit Card AI Tool</h3>
+                    <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
+                      Answer a few quick questions and our AI will recommend the best credit cards to maximize your tuition savings.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-3 mb-8">
+                      <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium">2 Min Quiz</span>
+                      <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium">Personalized Results</span>
+                      <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium">Free</span>
+                    </div>
+                    <Button size="lg" className="h-14 px-8 text-base gap-2 rounded-full w-full md:w-auto group-hover:gap-4 transition-all">
+                      Find Your Best Card
+                      <ArrowRight className="h-5 w-5" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+
+            {/* Path 2: Pay Tuition */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Link href="/pay" className="block group">
+                <Card className="h-full border-2 border-emerald-200 hover:border-emerald-400 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white to-emerald-50/50 overflow-hidden relative">
+                  {/* Step Badge */}
+                  <div className="absolute top-4 left-4">
+                    <div className="flex items-center gap-2 bg-emerald-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                      <span>Step 2</span>
+                    </div>
+                  </div>
+                  <CardContent className="p-10 pt-16 text-center">
+                    <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 mb-8 shadow-xl group-hover:scale-110 transition-transform duration-500">
+                      <DollarSign className="h-12 w-12 text-white" />
+                    </div>
+                    <h3 className="text-2xl md:text-3xl font-bold mb-4">Pay Your Tuition</h3>
+                    <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
+                      Already have your card? Use our secure payment portal to pay tuition directly to your school with your credit card.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-3 mb-8">
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">Secure</span>
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">Direct to School</span>
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">Instant</span>
+                    </div>
+                    <Button size="lg" variant="outline" className="h-14 px-8 text-base gap-2 rounded-full w-full md:w-auto border-emerald-300 hover:bg-emerald-50 group-hover:gap-4 transition-all">
+                      Make a Payment
+                      <ArrowRight className="h-5 w-5" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            </motion.div>
+          </div>
+
+          {/* Connector Arrow */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+            className="hidden md:flex justify-center mt-8"
+          >
+            <div className="flex items-center gap-4 text-muted-foreground">
+              <div className="h-px w-20 bg-gradient-to-r from-transparent to-muted-foreground/30" />
+              <span className="text-sm font-medium">Apply for your card, then return to pay</span>
+              <div className="h-px w-20 bg-gradient-to-l from-transparent to-muted-foreground/30" />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="py-24 md:py-32 bg-gradient-to-b from-background to-muted/30 relative">
         <div className="container mx-auto px-6">
@@ -311,6 +424,153 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Rewards Comparison Section */}
+      <section className="py-24 md:py-32 bg-gradient-to-b from-background to-primary/5 relative overflow-hidden">
+        {/* Decorative Background */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 -left-20 w-72 h-72 rounded-full bg-emerald-500/10 blur-3xl" />
+          <div className="absolute bottom-20 -right-20 w-72 h-72 rounded-full bg-blue-500/10 blur-3xl" />
+        </div>
+
+        <div className="container mx-auto px-6 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Cash Back vs. Travel Rewards</h2>
+            <p className="text-muted-foreground max-w-3xl mx-auto text-lg">
+              Our 10-12% estimate is based on cash back. But travel rewards can be worth <span className="font-semibold text-primary">2-3x more</span>, potentially pushing your savings even higher.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Cash Back Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="h-full border-0 shadow-xl bg-gradient-to-br from-white to-emerald-50/50 overflow-hidden">
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
+                      <Banknote className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">Cash Back</h3>
+                      <p className="text-emerald-600 font-semibold">Simple & Straightforward</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Direct statement credits or deposits—no complexity</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Typical signup bonuses: $200-$500</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">1.5-2% ongoing rewards on spending</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">No points programs to learn</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-emerald-100 rounded-xl p-5">
+                    <div className="text-sm text-emerald-800 font-medium mb-1">On $30,000 tuition</div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-emerald-700">$3,000-$3,600</span>
+                      <span className="text-emerald-600">savings</span>
+                    </div>
+                    <div className="text-sm text-emerald-600 mt-1">10-12% effective return</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Travel Rewards Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <Card className="h-full border-2 border-blue-200 shadow-xl bg-gradient-to-br from-white to-blue-50/50 overflow-hidden relative">
+                {/* Popular Badge */}
+                <div className="absolute top-4 right-4">
+                  <div className="flex items-center gap-1 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    <TrendingUp className="h-3 w-3" />
+                    Higher Value
+                  </div>
+                </div>
+                <CardContent className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg">
+                      <Plane className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold">Travel Rewards</h3>
+                      <p className="text-blue-600 font-semibold">Worth 2-3x More</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Points valued at 1.5-2+ cents each when redeemed for travel</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Larger signup bonuses: 60,000-100,000+ points</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Transfer partners can multiply value further</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-muted-foreground">Premium perks: lounge access, travel credits</span>
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-100 rounded-xl p-5">
+                    <div className="text-sm text-blue-800 font-medium mb-1">On $30,000 tuition</div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-3xl font-bold text-blue-700">$6,000-$9,000+</span>
+                      <span className="text-blue-600">in travel value</span>
+                    </div>
+                    <div className="text-sm text-blue-600 mt-1">20-30%+ effective return</div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
+
+          {/* Bottom Note */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+            className="max-w-3xl mx-auto mt-12 text-center"
+          >
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">Not a traveler?</span> Cash back is still excellent—getting 10-12% back on tuition is a significant savings.
+              Our tool recommends the best option based on <span className="font-medium">your</span> preferences.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Stats Section */}
       <section className="py-24 md:py-32 bg-gradient-to-b from-muted/30 to-muted/50 relative overflow-hidden">
         {/* Decorative Elements */}
@@ -399,6 +659,98 @@ export default function HomePage() {
               <Link href="/partner">Apply to Partner</Link>
             </Button>
           </motion.div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section id="faq" className="py-24 md:py-32 bg-muted/30 relative">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 mb-6">
+              <HelpCircle className="h-7 w-7 text-primary" />
+            </div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+              Common questions about credit card rewards, redemption, and our platform.
+            </p>
+          </motion.div>
+
+          <div className="max-w-3xl mx-auto">
+            {/* FAQ Items - Placeholder for now */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              {[
+                {
+                  question: 'How do I redeem my credit card rewards?',
+                  answer: 'Coming soon - detailed instructions for redeeming rewards from various credit card issuers.',
+                },
+                {
+                  question: 'What credit score do I need to qualify?',
+                  answer: 'Coming soon - information about credit score requirements for different card types.',
+                },
+                {
+                  question: 'How does the payment process work?',
+                  answer: 'Coming soon - step-by-step guide to making tuition payments through our platform.',
+                },
+                {
+                  question: 'Are there any fees for using TuitionPay?',
+                  answer: 'Coming soon - transparent breakdown of any fees associated with our service.',
+                },
+                {
+                  question: 'How long does it take for payments to reach the school?',
+                  answer: 'Coming soon - timeline information for payment processing.',
+                },
+              ].map((faq, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
+                    <CardContent className="p-6">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                          <ChevronDown className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
+                          <p className="text-muted-foreground text-sm italic">{faq.answer}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="text-center mt-10"
+            >
+              <p className="text-muted-foreground">
+                Have more questions?{' '}
+                <Link href="mailto:support@tuitionpay.ai" className="text-primary hover:underline font-medium">
+                  Contact us
+                </Link>
+              </p>
+            </motion.div>
+          </div>
         </div>
       </section>
 
