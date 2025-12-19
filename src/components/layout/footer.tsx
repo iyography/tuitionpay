@@ -25,7 +25,7 @@ export function Footer() {
               <span className="font-bold text-xl tracking-tight">TuitionPay</span>
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Save 10-12% on private school tuition through optimized credit card rewards.
+              Save an average of 12% on private school tuition through optimized credit card rewards.
             </p>
           </div>
 

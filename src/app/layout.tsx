@@ -9,11 +9,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "TuitionPay - Save 10-12% on Private School Tuition",
+    default: "TuitionPay - Save 12% on Average on Private School Tuition",
     template: "%s | TuitionPay",
   },
   description:
-    "Discover which credit cards will maximize your rewards when paying private school tuition. Save 10-12% through optimized signup bonuses and rewards.",
+    "Discover which credit cards will maximize your rewards when paying private school tuition. Save an average of 12% through optimized signup bonuses and rewards.",
   keywords: [
     "tuition payment",
     "private school",
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     siteName: "TuitionPay",
-    title: "TuitionPay - Save 10-12% on Private School Tuition",
+    title: "TuitionPay - Save 12% on Average on Private School Tuition",
     description:
       "Discover which credit cards will maximize your rewards when paying private school tuition.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TuitionPay - Save 10-12% on Private School Tuition",
+    title: "TuitionPay - Save 12% on Average on Private School Tuition",
     description:
       "Discover which credit cards will maximize your rewards when paying private school tuition.",
   },

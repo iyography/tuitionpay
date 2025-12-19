@@ -26,20 +26,21 @@ import {
 const features = [
   {
     icon: CreditCard,
+    subtitle: 'Get Rewarded',
     title: 'Smart Card Matching',
     description: 'Our algorithm analyzes your profile to recommend the best credit cards for maximum tuition savings.',
     gradient: 'from-violet-500 to-purple-600',
   },
   {
     icon: PiggyBank,
-    title: 'Save 10-12%',
+    title: 'Save 12% on Average',
     description: 'Earn signup bonuses and rewards that can offset a significant portion of your tuition costs.',
     gradient: 'from-blue-500 to-cyan-500',
   },
   {
     icon: Shield,
-    title: 'Secure Payments',
-    description: 'Funds flow directly to schools through our PCI-compliant payment system. We never touch your money.',
+    title: 'Secure Payments + School Benefits',
+    description: 'Funds flow directly to schools through our PCI-compliant payment system. Schools receive a portion of each transaction.',
     gradient: 'from-emerald-500 to-teal-500',
   },
 ]
@@ -357,6 +358,9 @@ export default function HomePage() {
                     <div className={`inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${feature.gradient} mb-6 shadow-lg group-hover:scale-110 transition-transform duration-500`}>
                       <feature.icon className="h-8 w-8 text-white" />
                     </div>
+                    {'subtitle' in feature && feature.subtitle && (
+                      <p className="text-sm font-medium text-primary mb-1">{feature.subtitle}</p>
+                    )}
                     <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
                     <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
                   </CardContent>
