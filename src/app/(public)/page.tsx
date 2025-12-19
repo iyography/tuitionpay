@@ -76,7 +76,7 @@ const stats = [
   { value: '$2M+', label: 'Tuition Processed' },
   { value: '500+', label: 'Happy Families' },
   { value: '50+', label: 'Partner Schools' },
-  { value: '$3,500', label: 'Avg. Annual Savings' },
+  { value: '12%', label: 'Avg. Yearly Savings' },
 ]
 
 const containerVariants = {
@@ -146,7 +146,7 @@ export default function HomePage() {
               <motion.div variants={itemVariants} className="mb-8">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/60 backdrop-blur-sm px-5 py-2 text-sm font-medium shadow-lg shadow-primary/5">
                   <TrendingUp className="h-4 w-4 text-primary" />
-                  <span className="text-foreground/80">Parents are saving an average of <span className="font-semibold text-primary">$3,500</span> per year</span>
+                  <span className="text-foreground/80">Parents are saving <span className="font-semibold text-primary">12%</span> on yearly tuition costs</span>
                 </div>
               </motion.div>
 
