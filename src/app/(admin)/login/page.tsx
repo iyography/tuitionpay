@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CreditCard, AlertCircle, Loader2, Sparkles } from 'lucide-react'
-import { DEMO_MODE, demoAdmin } from '@/lib/demo-data'
+import { CreditCard, AlertCircle, Loader2, Sparkles, School, Shield } from 'lucide-react'
+import { DEMO_MODE, demoAdmin, demoSuperAdmin } from '@/lib/demo-data'
 import Link from 'next/link'
 
 function LoginForm() {
@@ -68,11 +68,18 @@ function LoginForm() {
     }
   }
 
-  const handleDemoLogin = async () => {
+  const handleSchoolDemoLogin = async () => {
     setIsLoading(true)
     await new Promise(resolve => setTimeout(resolve, 800))
     sessionStorage.setItem('demo_admin', JSON.stringify(demoAdmin))
-    router.push(redirect)
+    router.push('/admin')
+  }
+
+  const handleSuperAdminDemoLogin = async () => {
+    setIsLoading(true)
+    await new Promise(resolve => setTimeout(resolve, 800))
+    sessionStorage.setItem('demo_superadmin', JSON.stringify(demoSuperAdmin))
+    router.push('/superadmin')
   }
 
   return (
@@ -101,25 +108,31 @@ function LoginForm() {
           <CardContent>
             {DEMO_MODE && (
               <div className="mb-6">
-                <Button
-                  type="button"
-                  onClick={handleDemoLogin}
-                  disabled={isLoading}
-                  className="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading Demo...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Try Demo Dashboard
-                    </>
-                  )}
-                </Button>
-                <p className="text-xs text-center text-muted-foreground mt-2">
+                <p className="text-sm font-medium text-center mb-3">Try Demo Mode</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button
+                    type="button"
+                    onClick={handleSchoolDemoLogin}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="h-auto py-4 flex-col gap-2 border-2 hover:border-primary hover:bg-primary/5"
+                  >
+                    <School className="h-6 w-6 text-primary" />
+                    <span className="text-sm font-medium">School Portal</span>
+                    <span className="text-xs text-muted-foreground">For partner schools</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleSuperAdminDemoLogin}
+                    disabled={isLoading}
+                    className="h-auto py-4 flex-col gap-2 bg-gradient-to-br from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800"
+                  >
+                    <Shield className="h-6 w-6" />
+                    <span className="text-sm font-medium">Admin Portal</span>
+                    <span className="text-xs text-white/70">TuitionPay team</span>
+                  </Button>
+                </div>
+                <p className="text-xs text-center text-muted-foreground mt-3">
                   No account needed - explore with sample data
                 </p>
                 <div className="relative my-6">

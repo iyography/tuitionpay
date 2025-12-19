@@ -10,34 +10,39 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  School,
   Building,
+  School,
+  Users,
+  Shield,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { DEMO_MODE } from '@/lib/demo-data'
 
-// School admin only sees Dashboard, Transactions, and Settings
+// Super admin sees everything
 const navItems = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/transactions', label: 'Transactions', icon: Receipt },
-  { href: '/admin/settings', label: 'Settings', icon: Settings },
+  { href: '/superadmin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/superadmin/schools', label: 'Schools', icon: School },
+  { href: '/superadmin/applications', label: 'Applications', icon: Building },
+  { href: '/superadmin/transactions', label: 'Transactions', icon: Receipt },
+  { href: '/superadmin/cards', label: 'Credit Cards', icon: CreditCard },
+  { href: '/superadmin/settings', label: 'Settings', icon: Settings },
 ]
 
-export function AdminSidebar() {
+export function SuperAdminSidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const [collapsed, setCollapsed] = useState(false)
 
   const handleSignOut = async () => {
     if (DEMO_MODE) {
-      sessionStorage.removeItem('demo_admin')
+      sessionStorage.removeItem('demo_superadmin')
       router.push('/login')
       return
     }
+    const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
@@ -46,21 +51,21 @@ export function AdminSidebar() {
   return (
     <aside
       className={cn(
-        'sticky top-0 h-screen bg-muted/30 border-r transition-all duration-300',
+        'sticky top-0 h-screen bg-slate-900 text-white transition-all duration-300',
         collapsed ? 'w-16' : 'w-64'
       )}
     >
       <div className="flex flex-col h-full">
         {/* Header */}
-        <div className="flex items-center justify-between h-16 px-4 border-b">
+        <div className="flex items-center justify-between h-16 px-4 border-b border-slate-700">
           {!collapsed && (
-            <Link href="/admin" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <School className="h-5 w-5 text-primary-foreground" />
+            <Link href="/superadmin" className="flex items-center space-x-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600">
+                <Shield className="h-5 w-5 text-white" />
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-sm">School Portal</span>
-                <span className="text-xs text-muted-foreground">TuitionPay</span>
+                <span className="font-bold text-sm">Admin Portal</span>
+                <span className="text-xs text-slate-400">TuitionPay Team</span>
               </div>
             </Link>
           )}
@@ -68,7 +73,7 @@ export function AdminSidebar() {
             variant="ghost"
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
-            className={cn(collapsed && 'mx-auto')}
+            className={cn('text-slate-400 hover:text-white hover:bg-slate-800', collapsed && 'mx-auto')}
           >
             {collapsed ? (
               <ChevronRight className="h-4 w-4" />
@@ -82,7 +87,8 @@ export function AdminSidebar() {
         <nav className="flex-1 py-4">
           <ul className="space-y-1 px-2">
             {navItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = pathname === item.href ||
+                (item.href !== '/superadmin' && pathname.startsWith(item.href))
               return (
                 <li key={item.href}>
                   <Link
@@ -90,8 +96,8 @@ export function AdminSidebar() {
                     className={cn(
                       'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',
                       isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'hover:bg-muted text-muted-foreground hover:text-foreground',
+                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800',
                       collapsed && 'justify-center'
                     )}
                     title={collapsed ? item.label : undefined}
@@ -106,11 +112,11 @@ export function AdminSidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t border-slate-700">
           <Button
             variant="ghost"
             className={cn(
-              'w-full justify-start text-muted-foreground hover:text-foreground',
+              'w-full justify-start text-slate-400 hover:text-white hover:bg-slate-800',
               collapsed && 'justify-center'
             )}
             onClick={handleSignOut}

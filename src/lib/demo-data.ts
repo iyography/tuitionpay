@@ -462,12 +462,43 @@ export const demoStudents = [
   { id: 'student-7', school_id: 'school-1', student_name: 'Olivia Davis', student_identifier: 'STU-007', parent_email: 'davis.olivia@email.com' },
 ]
 
-// Demo admin user
+// Demo school admin user (for schools)
 export const demoAdmin = {
   id: 'admin-1',
   email: 'demo@tuitionpay.ai',
   school_id: 'school-1',
   role: 'admin' as const
+}
+
+// Demo super admin user (for TuitionPay internal team)
+export const demoSuperAdmin = {
+  id: 'superadmin-1',
+  email: 'team@tuitionpay.ai',
+  role: 'superadmin' as const
+}
+
+// Get all transactions across all schools (for super admin)
+export function getAllDemoTransactions() {
+  return demoTransactions
+}
+
+// Get platform-wide metrics (for super admin)
+export function getPlatformMetrics() {
+  const completedPayments = demoTransactions.filter(t => t.status === 'completed')
+  const pendingPayments = demoTransactions.filter(t => t.status === 'pending' || t.status === 'processing')
+  const activeSchools = demoSchools.filter(s => s.status === 'active')
+
+  return {
+    totalSchools: demoSchools.length,
+    activeSchools: activeSchools.length,
+    pendingApplications: demoApplications.filter(a => a.status === 'pending').length,
+    totalPayments: completedPayments.length,
+    totalRevenue: completedPayments.reduce((sum, p) => sum + p.amount, 0),
+    totalRevenueShare: completedPayments.reduce((sum, p) => sum + (p.revenue_share_amount || 0), 0),
+    pendingPayments: pendingPayments.length,
+    totalStudents: demoStudents.length,
+    activeCreditCards: demoCreditCards.filter(c => c.is_active).length
+  }
 }
 
 // Helper to get school by ID

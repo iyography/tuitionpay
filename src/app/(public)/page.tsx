@@ -693,23 +693,27 @@ export default function HomePage() {
               {[
                 {
                   question: 'How do I redeem my credit card rewards?',
-                  answer: 'Coming soon - detailed instructions for redeeming rewards from various credit card issuers.',
+                  answer: 'Redemption varies by card issuer. For cash back cards, rewards typically appear as statement credits or direct deposits. For travel rewards, you can book through the card\'s travel portal or transfer points to airline/hotel partners. Chase, Amex, and Capital One all have user-friendly redemption portals. We recommend redeeming travel points for flights or hotels where you often get 1.5-2+ cents per point value.',
                 },
                 {
                   question: 'What credit score do I need to qualify?',
-                  answer: 'Coming soon - information about credit score requirements for different card types.',
+                  answer: 'Most premium rewards cards require good to excellent credit (typically 670+). Cash back cards often have more flexible requirements (620+). Our recommendation engine filters cards based on your credit score range, so you\'ll only see cards you\'re likely to be approved for. If you\'re unsure of your score, check free at Credit Karma or through your bank\'s app.',
                 },
                 {
                   question: 'How does the payment process work?',
-                  answer: 'Coming soon - step-by-step guide to making tuition payments through our platform.',
+                  answer: 'First, use our Card Optimizer to find the best credit card for your situation. Apply for that card directly with the issuer. Once approved, return to TuitionPay, select your school, enter your payment details, and pay using your new card. Funds go directly to your school through our secure Helcim payment system.',
                 },
                 {
                   question: 'Are there any fees for using TuitionPay?',
-                  answer: 'Coming soon - transparent breakdown of any fees associated with our service.',
+                  answer: 'There\'s a standard credit card processing fee (around 3%) that applies to all credit card tuition payments. However, the rewards you earn (10-30%+ back) far exceed this fee. Schools receive 100% of the tuition amount - the fee comes from the payment processing side, not from what you pay.',
                 },
                 {
                   question: 'How long does it take for payments to reach the school?',
-                  answer: 'Coming soon - timeline information for payment processing.',
+                  answer: 'Schools typically receive funds within 2-3 business days after your payment is processed. You\'ll receive a confirmation email immediately after your payment is completed, and can track the status in your payment history.',
+                },
+                {
+                  question: 'Can I split my tuition across multiple cards?',
+                  answer: 'Yes! This is actually a great strategy for maximizing rewards. You can meet multiple signup bonus requirements by splitting your tuition payment across 2-3 cards. Our Card Optimizer can help you plan this strategy based on your spending capacity and the cards you qualify for.',
                 },
               ].map((faq, index) => (
                 <motion.div
@@ -727,7 +731,7 @@ export default function HomePage() {
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
-                          <p className="text-muted-foreground text-sm italic">{faq.answer}</p>
+                          <p className="text-muted-foreground text-sm leading-relaxed">{faq.answer}</p>
                         </div>
                       </div>
                     </CardContent>
