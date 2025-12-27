@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { calculateRecommendations } from '@/lib/matching/card-engine'
+import { calculateRecommendations, calculateSplitStrategies } from '@/lib/matching/card-engine'
 import type { CardMatchingCriteria } from '@/types/cards'
 import { assessmentSchema } from '@/lib/validations/schemas'
 
@@ -66,6 +66,9 @@ export async function POST(request: NextRequest) {
     // Calculate recommendations
     const recommendations = calculateRecommendations(cards, criteria)
 
+    // Calculate split strategy (for higher tuition amounts)
+    const splitStrategy = calculateSplitStrategies(cards, criteria)
+
     // Store assessment response in database
     const { data: assessment, error: assessmentError } = await supabase
       .from('assessment_responses')
@@ -111,6 +114,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       recommendations,
+      splitStrategy,
       assessmentId: assessment?.id,
     })
   } catch (error) {

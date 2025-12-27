@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import { useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -23,25 +23,94 @@ import {
   HelpCircle,
 } from 'lucide-react'
 
+const faqData = [
+  {
+    question: 'How do I redeem my credit card rewards?',
+    answer: 'Redemption varies by card issuer. For cash back cards, rewards typically appear as statement credits or direct deposits. For travel rewards, you can book through the card\'s travel portal or transfer points to airline/hotel partners. Chase, Amex, and Capital One all have user-friendly redemption portals. We recommend redeeming travel points for flights or hotels where you often get 1.5-2+ cents per point value.',
+  },
+  {
+    question: 'What credit score do I need to qualify?',
+    answer: 'Most premium rewards cards require good to excellent credit (typically 670+). Cash back cards often have more flexible requirements (620+). Our recommendation engine filters cards based on your credit score range, so you\'ll only see cards you\'re likely to be approved for. If you\'re unsure of your score, check free at Credit Karma or through your bank\'s app.',
+  },
+  {
+    question: 'How does the payment process work?',
+    answer: 'First, use our Card Optimizer to find the best credit card for your situation. Apply for that card directly with the issuer. Once approved, return to TuitionPay, select your school, enter your payment details, and pay using your new card. Funds go directly to your school through our secure Helcim payment system.',
+  },
+  {
+    question: 'Are there any fees for using TuitionPay?',
+    answer: 'There\'s a standard credit card processing fee (around 3%) that applies to all credit card tuition payments. However, the rewards you earn (10-30%+ back) far exceed this fee. Schools receive 100% of the tuition amount - the fee comes from the payment processing side, not from what you pay.',
+  },
+  {
+    question: 'How long does it take for payments to reach the school?',
+    answer: 'Schools typically receive funds within 2-3 business days after your payment is processed. You\'ll receive a confirmation email immediately after your payment is completed, and can track the status in your payment history.',
+  },
+  {
+    question: 'Can I split my tuition across multiple cards?',
+    answer: 'Yes! This is actually a great strategy for maximizing rewards. You can meet multiple signup bonus requirements by splitting your tuition payment across 2-3 cards. Our Card Optimizer can help you plan this strategy based on your spending capacity and the cards you qualify for.',
+  },
+]
+
+function FAQAccordion() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
+
+  return (
+    <div className="space-y-4">
+      {faqData.map((faq, index) => (
+        <Card
+          key={index}
+          className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white/80 backdrop-blur-sm cursor-pointer"
+          onClick={() => setOpenIndex(openIndex === index ? null : index)}
+        >
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
+                <ChevronDown
+                  className={`h-4 w-4 text-primary transition-transform duration-300 ${openIndex === index ? 'rotate-180' : ''}`}
+                />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-lg">{faq.question}</h3>
+                <AnimatePresence>
+                  {openIndex === index && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="text-muted-foreground text-sm leading-relaxed mt-2">{faq.answer}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
 const features = [
   {
     icon: CreditCard,
     subtitle: 'Get Rewarded',
     title: 'Smart Card Matching',
     description: 'Our algorithm analyzes your profile to recommend the best credit cards for maximum tuition savings.',
-    gradient: 'from-violet-500 to-purple-600',
+    gradient: 'from-amber-500 to-orange-600',
   },
   {
     icon: PiggyBank,
     title: 'Save 12% on Average',
     description: 'Earn signup bonuses and rewards that can offset a significant portion of your tuition costs.',
-    gradient: 'from-blue-500 to-cyan-500',
+    gradient: 'from-orange-500 to-amber-600',
   },
   {
     icon: Shield,
-    title: 'Secure Payments + School Benefits',
-    description: 'Funds flow directly to schools through our PCI-compliant payment system. Schools receive a portion of each transaction.',
-    gradient: 'from-emerald-500 to-teal-500',
+    title: 'School Benefits',
+    description: 'Funds flow directly to schools through our PCI-compliant payment system. Schools receive donations when TuitionPay is utilized.',
+    gradient: 'from-yellow-500 to-amber-600',
   },
 ]
 
@@ -121,9 +190,9 @@ export default function HomePage() {
 
         {/* Floating Blobs */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="blob blob-delay-1 absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-violet-400/30 to-purple-500/20 blur-3xl" />
-          <div className="blob blob-delay-2 absolute top-1/2 -left-40 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-blue-400/25 to-cyan-500/15 blur-3xl" />
-          <div className="blob blob-delay-3 absolute -bottom-40 right-1/4 w-[450px] h-[450px] rounded-full bg-gradient-to-br from-pink-400/20 to-rose-500/10 blur-3xl" />
+          <div className="blob blob-delay-1 absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-amber-400/30 to-orange-500/20 blur-3xl" />
+          <div className="blob blob-delay-2 absolute top-1/2 -left-40 w-[400px] h-[400px] rounded-full bg-gradient-to-br from-yellow-400/25 to-amber-500/15 blur-3xl" />
+          <div className="blob blob-delay-3 absolute -bottom-40 right-1/4 w-[450px] h-[450px] rounded-full bg-gradient-to-br from-orange-400/20 to-amber-500/10 blur-3xl" />
         </div>
 
         {/* Grid Pattern Overlay */}
@@ -155,9 +224,7 @@ export default function HomePage() {
                 variants={itemVariants}
                 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6 leading-[1.1]"
               >
-                Save{' '}
-                <span className="text-gradient">12%</span>
-                {' '}to Save Thousands
+                <span className="text-gradient">Save Thousands</span>
                 <br />
                 on Private School Tuition
               </motion.h1>
@@ -245,7 +312,7 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
             >
               <Link href="/optimizer" className="block group">
-                <Card className="h-full border-2 border-primary/20 hover:border-primary/50 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white to-violet-50/50 overflow-hidden relative">
+                <Card className="h-full border-2 border-primary/20 hover:border-primary/50 shadow-xl hover:shadow-2xl transition-all duration-500 bg-gradient-to-br from-white to-amber-50/50 overflow-hidden relative">
                   {/* Step Badge */}
                   <div className="absolute top-4 left-4">
                     <div className="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-semibold">
@@ -253,7 +320,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <CardContent className="p-10 pt-16 text-center">
-                    <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-violet-500 to-purple-600 mb-8 shadow-xl group-hover:scale-110 transition-transform duration-500">
+                    <div className="inline-flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-500 to-orange-600 mb-8 shadow-xl group-hover:scale-110 transition-transform duration-500">
                       <Sparkles className="h-12 w-12 text-white" />
                     </div>
                     <h3 className="text-2xl md:text-3xl font-bold mb-4">Credit Card AI Tool</h3>
@@ -261,9 +328,9 @@ export default function HomePage() {
                       Answer a few quick questions and our AI will recommend the best credit cards to maximize your tuition savings.
                     </p>
                     <div className="flex flex-wrap justify-center gap-3 mb-8">
-                      <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium">2 Min Quiz</span>
-                      <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium">Personalized Results</span>
-                      <span className="px-3 py-1 bg-violet-100 text-violet-700 rounded-full text-sm font-medium">Free</span>
+                      <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">2 Min Quiz</span>
+                      <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">Personalized Results</span>
+                      <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">Free</span>
                     </div>
                     <Button size="lg" className="h-14 px-8 text-base gap-2 rounded-full w-full md:w-auto group-hover:gap-4 transition-all">
                       Find Your Best Card
@@ -303,7 +370,7 @@ export default function HomePage() {
                       <span className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-medium">Instant</span>
                     </div>
                     <Button size="lg" variant="outline" className="h-14 px-8 text-base gap-2 rounded-full w-full md:w-auto border-emerald-300 hover:bg-emerald-50 group-hover:gap-4 transition-all">
-                      Make a Payment
+                      Pay Your Tuition
                       <ArrowRight className="h-5 w-5" />
                     </Button>
                   </CardContent>
@@ -695,54 +762,7 @@ export default function HomePage() {
               transition={{ duration: 0.5 }}
               className="space-y-4"
             >
-              {[
-                {
-                  question: 'How do I redeem my credit card rewards?',
-                  answer: 'Redemption varies by card issuer. For cash back cards, rewards typically appear as statement credits or direct deposits. For travel rewards, you can book through the card\'s travel portal or transfer points to airline/hotel partners. Chase, Amex, and Capital One all have user-friendly redemption portals. We recommend redeeming travel points for flights or hotels where you often get 1.5-2+ cents per point value.',
-                },
-                {
-                  question: 'What credit score do I need to qualify?',
-                  answer: 'Most premium rewards cards require good to excellent credit (typically 670+). Cash back cards often have more flexible requirements (620+). Our recommendation engine filters cards based on your credit score range, so you\'ll only see cards you\'re likely to be approved for. If you\'re unsure of your score, check free at Credit Karma or through your bank\'s app.',
-                },
-                {
-                  question: 'How does the payment process work?',
-                  answer: 'First, use our Card Optimizer to find the best credit card for your situation. Apply for that card directly with the issuer. Once approved, return to TuitionPay, select your school, enter your payment details, and pay using your new card. Funds go directly to your school through our secure Helcim payment system.',
-                },
-                {
-                  question: 'Are there any fees for using TuitionPay?',
-                  answer: 'There\'s a standard credit card processing fee (around 3%) that applies to all credit card tuition payments. However, the rewards you earn (10-30%+ back) far exceed this fee. Schools receive 100% of the tuition amount - the fee comes from the payment processing side, not from what you pay.',
-                },
-                {
-                  question: 'How long does it take for payments to reach the school?',
-                  answer: 'Schools typically receive funds within 2-3 business days after your payment is processed. You\'ll receive a confirmation email immediately after your payment is completed, and can track the status in your payment history.',
-                },
-                {
-                  question: 'Can I split my tuition across multiple cards?',
-                  answer: 'Yes! This is actually a great strategy for maximizing rewards. You can meet multiple signup bonus requirements by splitting your tuition payment across 2-3 cards. Our Card Optimizer can help you plan this strategy based on your spending capacity and the cards you qualify for.',
-                },
-              ].map((faq, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-300 bg-white/80 backdrop-blur-sm">
-                    <CardContent className="p-6">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mt-0.5">
-                          <ChevronDown className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-lg mb-2">{faq.question}</h3>
-                          <p className="text-muted-foreground text-sm leading-relaxed">{faq.answer}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
+              <FAQAccordion />
             </motion.div>
 
             <motion.div
@@ -766,7 +786,7 @@ export default function HomePage() {
       {/* Final CTA Section */}
       <section className="py-24 md:py-32 relative overflow-hidden">
         {/* Gradient Background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-violet-600" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary via-primary/90 to-orange-600" />
 
         {/* Animated Blobs */}
         <div className="absolute inset-0 overflow-hidden">

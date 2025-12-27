@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { CreditCard, DollarSign, Menu, X } from 'lucide-react'
@@ -10,7 +11,7 @@ import { cn } from '@/lib/utils'
 
 const navItems = [
   { href: '/optimizer', label: 'See Your Savings', icon: CreditCard },
-  { href: '/pay', label: 'Make a Payment', icon: DollarSign },
+  { href: '/pay', label: 'Pay Your Tuition', icon: DollarSign },
 ]
 
 export function Header() {
@@ -36,21 +37,20 @@ export function Header() {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
-        scrolled
-          ? 'bg-white/80 backdrop-blur-xl shadow-lg shadow-black/5 border-b border-white/20'
-          : 'bg-transparent'
-      )}
+      className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md"
     >
       <div className="container mx-auto px-6">
-        <div className="flex h-16 md:h-20 items-center justify-between">
+        <div className="flex h-20 md:h-24 items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 transition-all duration-300">
-              <CreditCard className="h-5 w-5 text-white" />
-            </div>
-            <span className="font-bold text-xl tracking-tight">TuitionPay</span>
+          <Link href="/" className="flex items-center group">
+            <Image
+              src="/logo.png"
+              alt="TuitionPay"
+              width={640}
+              height={160}
+              className="h-[160px] w-auto"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -74,7 +74,7 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" className="rounded-full" asChild>
+            <Button className="rounded-full bg-black text-white hover:bg-gray-800" asChild>
               <Link href="/login">School Login</Link>
             </Button>
             <Button className="rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300" asChild>

@@ -29,7 +29,7 @@ export function StepSchool({ data, updateData, setCanProceed }: StepSchoolProps)
           <p className="font-medium text-amber-800">Complete this before paying tuition</p>
           <p className="text-amber-700 mt-1">
             Finish this quick assessment to find your best credit card <span className="font-medium">before</span> making your tuition payment.
-            Applying for the right card first could save you 10-30% on your payment.
+            Applying for the right card first could save you 10-12% on your payment.
           </p>
         </div>
       </div>

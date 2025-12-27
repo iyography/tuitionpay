@@ -23,15 +23,18 @@ import {
   Percent,
   Calculator,
   ExternalLink,
+  Layers,
+  Sparkles,
 } from 'lucide-react'
 import { useAssessment } from '@/hooks/use-assessment'
 import type { CardRecommendationResult } from '@/types/cards'
-import { formatCurrency, generateSavingsExplanation } from '@/lib/matching/card-engine'
+import { formatCurrency, generateSavingsExplanation, type SplitStrategy } from '@/lib/matching/card-engine'
 
 export default function ResultsPage() {
   const router = useRouter()
   const { data, isLoaded, getSessionId } = useAssessment()
   const [recommendations, setRecommendations] = useState<CardRecommendationResult[]>([])
+  const [splitStrategy, setSplitStrategy] = useState<SplitStrategy | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -64,6 +67,7 @@ export default function ResultsPage() {
 
       const result = await response.json()
       setRecommendations(result.recommendations)
+      setSplitStrategy(result.splitStrategy)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -149,6 +153,133 @@ export default function ResultsPage() {
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* Split Strategy Section */}
+        {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-8"
+          >
+            <Card className="border-2 border-dashed border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Layers className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <CardTitle className="text-xl">Split Payment Strategy</CardTitle>
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500">
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Maximum Savings
+                      </Badge>
+                    </div>
+                    <CardDescription>
+                      Split your ${data.tuitionAmount.toLocaleString()} tuition across 2 cards for bigger rewards
+                    </CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Split Summary */}
+                <div className="p-4 bg-primary/10 rounded-lg">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Combined First-Year Savings</p>
+                      <p className="text-3xl font-bold text-primary">{formatCurrency(splitStrategy.totalSavings)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">That&apos;s {splitStrategy.savingsPercentage}% back!</p>
+                      <p className="text-sm font-medium text-green-600">
+                        +{formatCurrency(splitStrategy.totalSavings - (recommendations[0]?.estimatedSavings || 0))} more than single card
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Cards in Strategy */}
+                <div className="grid md:grid-cols-2 gap-4">
+                  {splitStrategy.cards.map((cardInfo, idx) => (
+                    <div key={cardInfo.card.id} className="p-4 bg-white rounded-lg border shadow-sm">
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <p className="font-semibold">{cardInfo.card.card_name}</p>
+                          <p className="text-sm text-muted-foreground">{cardInfo.card.issuer}</p>
+                        </div>
+                        <Badge variant="outline">Card {idx + 1}</Badge>
+                      </div>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Pay on this card:</span>
+                          <span className="font-medium">{formatCurrency(cardInfo.allocatedAmount)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Signup bonus:</span>
+                          <span className="font-medium text-green-600">+{formatCurrency(cardInfo.breakdown.signupBonusValue)}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Rewards earned:</span>
+                          <span className="font-medium">+{formatCurrency(cardInfo.breakdown.rewardsEarned)}</span>
+                        </div>
+                        {cardInfo.card.signup_bonus_requirement && (
+                          <div className="pt-2 mt-2 border-t text-xs text-muted-foreground">
+                            Bonus requirement: {cardInfo.card.signup_bonus_requirement}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* How it works */}
+                <Collapsible>
+                  <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <ChevronDown className="h-4 w-4" />
+                    How split payments work
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="mt-3 p-4 bg-muted rounded-lg text-sm space-y-2">
+                    <p><strong>1. Apply for both cards</strong> - Most approvals take just minutes.</p>
+                    <p><strong>2. Split your tuition payment</strong> - Pay {formatCurrency(splitStrategy.cards[0]?.allocatedAmount || 0)} on Card 1, {formatCurrency(splitStrategy.cards[1]?.allocatedAmount || 0)} on Card 2.</p>
+                    <p><strong>3. Earn both signup bonuses</strong> - Each payment counts toward its card&apos;s bonus requirement.</p>
+                    <p><strong>4. Maximize your rewards</strong> - Get {formatCurrency(splitStrategy.totalSavings)} total in first-year value!</p>
+                  </CollapsibleContent>
+                </Collapsible>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  {splitStrategy.cards.map((cardInfo, idx) => (
+                    <Button
+                      key={cardInfo.card.id}
+                      variant={idx === 0 ? 'default' : 'outline'}
+                      className="flex-1"
+                      asChild
+                    >
+                      <a href={cardInfo.card.application_url || '#'} target="_blank" rel="noopener noreferrer">
+                        Apply for {cardInfo.card.card_name.split(' ').slice(0, 2).join(' ')}
+                        <ExternalLink className="ml-2 h-4 w-4" />
+                      </a>
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Single Card Recommendations */}
+        <div className="mb-6">
+          <h2 className="text-xl font-semibold mb-2">
+            {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)
+              ? 'Or Choose a Single Card'
+              : 'Top Card Recommendations'}
+          </h2>
+          <p className="text-muted-foreground text-sm">
+            {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)
+              ? 'If you prefer using just one card, here are your best options:'
+              : 'Based on your profile, these cards will maximize your rewards:'}
+          </p>
+        </div>
 
         {/* Recommendations */}
         <div className="space-y-6 mb-12">

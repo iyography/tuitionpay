@@ -1,8 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { CreditCard } from 'lucide-react'
 
 export function Footer() {
   const pathname = usePathname()
@@ -15,18 +15,18 @@ export function Footer() {
   return (
     <footer className="border-t bg-gradient-to-b from-muted/30 to-muted/50">
       <div className="container mx-auto px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 max-w-6xl mx-auto items-start">
           {/* Brand */}
           <div className="space-y-4 md:col-span-1">
-            <Link href="/" className="flex items-center space-x-3 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg shadow-primary/25">
-                <CreditCard className="h-5 w-5 text-white" />
-              </div>
-              <span className="font-bold text-xl tracking-tight">TuitionPay</span>
+            <Link href="/" className="flex items-center">
+              <Image
+                src="/logo.png"
+                alt="TuitionPay"
+                width={640}
+                height={160}
+                className="h-[160px] w-auto"
+              />
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Save an average of 12% on private school tuition through optimized credit card rewards.
-            </p>
           </div>
 
           {/* Parents */}
@@ -40,7 +40,7 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/pay" className="text-muted-foreground hover:text-primary transition-colors">
-                  Make a Payment
+                  Pay Your Tuition
                 </Link>
               </li>
               <li>

@@ -60,7 +60,7 @@ export function SuperAdminSidebar() {
         <div className="flex items-center justify-between h-16 px-4 border-b border-slate-700">
           {!collapsed && (
             <Link href="/superadmin" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-purple-600">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600">
                 <Shield className="h-5 w-5 text-white" />
               </div>
               <div className="flex flex-col">
@@ -96,7 +96,7 @@ export function SuperAdminSidebar() {
                     className={cn(
                       'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',
                       isActive
-                        ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white'
                         : 'text-slate-400 hover:text-white hover:bg-slate-800',
                       collapsed && 'justify-center'
                     )}

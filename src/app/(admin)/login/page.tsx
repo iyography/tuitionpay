@@ -8,9 +8,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { CreditCard, AlertCircle, Loader2, Sparkles, School, Shield } from 'lucide-react'
+import { AlertCircle, Loader2, School, Shield } from 'lucide-react'
 import { DEMO_MODE, demoAdmin, demoSuperAdmin } from '@/lib/demo-data'
 import Link from 'next/link'
+import Image from 'next/image'
 
 function LoginForm() {
   const router = useRouter()
@@ -90,11 +91,14 @@ function LoginForm() {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <CreditCard className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="font-bold text-2xl">TuitionPay</span>
+          <Link href="/" className="inline-flex items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="TuitionPay"
+              width={200}
+              height={50}
+              className="h-12 w-auto"
+            />
           </Link>
         </div>
 

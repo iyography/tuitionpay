@@ -161,6 +161,115 @@ export function calculateRecommendations(
   }))
 }
 
+// Calculate split payment strategies
+export interface SplitStrategy {
+  cards: {
+    card: CreditCard
+    allocatedAmount: number
+    breakdown: SavingsBreakdown
+  }[]
+  totalSavings: number
+  totalTuition: number
+  savingsPercentage: number
+}
+
+export function calculateSplitStrategies(
+  cards: CreditCard[],
+  criteria: CardMatchingCriteria
+): SplitStrategy | null {
+  const tuitionAmount = criteria.tuitionAmount
+
+  // Only suggest split if tuition is $6,000+ (makes sense to split)
+  if (tuitionAmount < 6000) return null
+
+  // Get eligible cards sorted by signup bonus value
+  const eligibleCards = filterCards(cards, criteria)
+    .filter(card => card.signup_bonus_value && card.signup_bonus_value > 0)
+    .sort((a, b) => (b.signup_bonus_value || 0) - (a.signup_bonus_value || 0))
+
+  if (eligibleCards.length < 2) return null
+
+  // Find best 2-card combination
+  const strategies: SplitStrategy[] = []
+
+  for (let i = 0; i < Math.min(eligibleCards.length, 5); i++) {
+    for (let j = i + 1; j < Math.min(eligibleCards.length, 6); j++) {
+      const card1 = eligibleCards[i]
+      const card2 = eligibleCards[j]
+
+      // Get spend requirements for each card
+      const req1 = parseSpendRequirement(card1.signup_bonus_requirement)
+      const req2 = parseSpendRequirement(card2.signup_bonus_requirement)
+
+      // Check if combined requirements can be met with tuition + monthly spend
+      const timeframe = 3 // months
+      const totalAvailableSpend = tuitionAmount + (criteria.monthlySpendCapacity * timeframe)
+
+      if (req1 + req2 > totalAvailableSpend) continue
+
+      // Allocate tuition between cards (try to meet both bonuses)
+      let allocation1 = Math.min(req1, tuitionAmount)
+      let allocation2 = tuitionAmount - allocation1
+
+      // Adjust if card2 needs more to meet its requirement
+      if (allocation2 < req2 && allocation1 > req1) {
+        const excess = allocation1 - req1
+        const needed = req2 - allocation2
+        const transfer = Math.min(excess, needed)
+        allocation1 -= transfer
+        allocation2 += transfer
+      }
+
+      // Calculate savings for this split
+      const breakdown1 = calculateSavingsBreakdown(card1, allocation1)
+      const breakdown2 = calculateSavingsBreakdown(card2, allocation2)
+
+      // Only count signup bonus if we can meet the requirement
+      const canMeet1 = allocation1 + (criteria.monthlySpendCapacity * timeframe) >= req1
+      const canMeet2 = allocation2 + (criteria.monthlySpendCapacity * timeframe) >= req2
+
+      const totalSavings =
+        (canMeet1 ? breakdown1.signupBonusValue : 0) +
+        (canMeet2 ? breakdown2.signupBonusValue : 0) +
+        breakdown1.rewardsEarned +
+        breakdown2.rewardsEarned +
+        breakdown1.annualFeeImpact +
+        breakdown2.annualFeeImpact
+
+      strategies.push({
+        cards: [
+          {
+            card: card1,
+            allocatedAmount: allocation1,
+            breakdown: canMeet1 ? breakdown1 : { ...breakdown1, signupBonusValue: 0 },
+          },
+          {
+            card: card2,
+            allocatedAmount: allocation2,
+            breakdown: canMeet2 ? breakdown2 : { ...breakdown2, signupBonusValue: 0 },
+          },
+        ],
+        totalSavings: Math.round(totalSavings * 100) / 100,
+        totalTuition: tuitionAmount,
+        savingsPercentage: Math.round((totalSavings / tuitionAmount) * 100),
+      })
+    }
+  }
+
+  // Return best split strategy
+  if (strategies.length === 0) return null
+
+  strategies.sort((a, b) => b.totalSavings - a.totalSavings)
+  return strategies[0]
+}
+
+function parseSpendRequirement(requirement: string | null): number {
+  if (!requirement) return 0
+  const match = requirement.match(/\$?([\d,]+)/)
+  if (!match) return 0
+  return parseInt(match[1].replace(/,/g, ''), 10)
+}
+
 // Format currency for display
 export function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', {
