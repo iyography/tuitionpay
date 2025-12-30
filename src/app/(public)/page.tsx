@@ -324,8 +324,8 @@ export default function HomePage() {
                       <Sparkles className="h-12 w-12 text-white" />
                     </div>
                     <h3 className="text-2xl md:text-3xl font-bold mb-4">Credit Card AI Tool</h3>
-                    <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
-                      Answer a few quick questions and our AI will recommend the best credit cards to maximize your tuition savings. <em>Pro tip: Pay as much as possible at once for maximum rewards!</em>
+                    <p className="text-muted-foreground text-lg mb-6 leading-relaxed min-h-[84px]">
+                      Answer a few quick questions and our AI will recommend the best credit cards to maximize your tuition savings.
                     </p>
                     <div className="flex flex-wrap justify-center gap-3 mb-8">
                       <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">2 Min Quiz</span>
@@ -361,7 +361,7 @@ export default function HomePage() {
                       <DollarSign className="h-12 w-12 text-white" />
                     </div>
                     <h3 className="text-2xl md:text-3xl font-bold mb-4">Pay Your Tuition</h3>
-                    <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
+                    <p className="text-muted-foreground text-lg mb-6 leading-relaxed min-h-[84px]">
                       Already have your card? Use our secure payment portal to pay tuition directly to your school with your credit card.
                     </p>
                     <div className="flex flex-wrap justify-center gap-3 mb-8">
