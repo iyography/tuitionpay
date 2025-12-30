@@ -6,7 +6,8 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { CheckCircle, Receipt, Mail, ArrowRight, Home } from 'lucide-react'
+import { CheckCircle, Receipt, Mail, ArrowRight, Home, Users, AlertCircle } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
 function ConfirmationContent() {
   const searchParams = useSearchParams()
@@ -110,6 +111,26 @@ function ConfirmationContent() {
                 Check your card issuer&apos;s app to track your progress.
               </p>
             </div>
+
+            {/* Pay Off Balance Reminder */}
+            <Alert className="bg-amber-50 border-amber-200 text-left">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertDescription className="text-amber-800">
+                <strong>Remember to pay off your card balance in full</strong> before your statement due date to avoid interest charges and maximize your rewards savings.
+              </AlertDescription>
+            </Alert>
+
+            {/* Spouse/Partner Reminder */}
+            <Alert className="bg-blue-50 border-blue-200 text-left">
+              <Users className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <strong>Have a spouse or partner?</strong> Don&apos;t forget to have them fill out the card assessment separately at{' '}
+                <Link href="/optimizer" className="underline font-medium">
+                  TuitionPay.ai/optimizer
+                </Link>{' '}
+                to maximize your family&apos;s credit card rewards!
+              </AlertDescription>
+            </Alert>
 
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 pt-4">

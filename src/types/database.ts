@@ -134,6 +134,7 @@ export interface Database {
           is_business_card: boolean
           application_url: string | null
           is_active: boolean
+          benefits: string | null
           created_at: string
           updated_at: string
         }
@@ -153,6 +154,7 @@ export interface Database {
           is_business_card?: boolean
           application_url?: string | null
           is_active?: boolean
+          benefits?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -168,6 +170,7 @@ export interface Database {
           rewards_rate?: number | null
           rewards_type?: string | null
           category_bonuses?: Json | null
+          benefits?: string | null
           min_credit_score?: number | null
           is_business_card?: boolean
           application_url?: string | null

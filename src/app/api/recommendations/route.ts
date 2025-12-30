@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { calculateRecommendations, calculateSplitStrategies } from '@/lib/matching/card-engine'
 import type { CardMatchingCriteria } from '@/types/cards'
 import { assessmentSchema } from '@/lib/validations/schemas'
+import { sendRecommendationEmail } from '@/lib/email/send-recommendations'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,8 +21,10 @@ export async function POST(request: NextRequest) {
     const {
       sessionId,
       schoolId,
+      schoolName,
       studentName,
       studentIdentifier,
+      parentEmail,
       tuitionAmount,
       creditScoreRange,
       currentCards,
@@ -109,6 +112,48 @@ export async function POST(request: NextRequest) {
 
       if (recError) {
         console.error('Error storing recommendations:', recError)
+      }
+    }
+
+    // Send recommendation email if parent email provided
+    if (parentEmail) {
+      try {
+        const emailRecommendations = recommendations.map(rec => ({
+          cardName: rec.card.card_name,
+          issuer: rec.card.issuer,
+          signupBonusValue: rec.breakdown.signupBonusValue,
+          signupBonusRequirement: rec.card.signup_bonus_requirement || '',
+          signupBonusTimeframe: rec.card.signup_bonus_timeframe || '3 months',
+          annualFee: rec.card.annual_fee,
+          firstYearWaived: rec.card.first_year_waived,
+          rewardsRate: rec.card.rewards_rate,
+          estimatedSavings: rec.estimatedSavings,
+          benefits: rec.card.benefits,
+          isBusinessCard: rec.card.is_business_card,
+        }))
+
+        const emailSplitStrategy = splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)
+          ? {
+              cards: splitStrategy.cards.map(c => ({
+                cardName: c.card.card_name,
+                allocatedAmount: c.allocatedAmount,
+                savings: c.breakdown.netFirstYearValue,
+              })),
+              totalSavings: splitStrategy.totalSavings,
+            }
+          : undefined
+
+        await sendRecommendationEmail({
+          to: parentEmail,
+          studentName,
+          schoolName: schoolName || 'your school',
+          tuitionAmount,
+          recommendations: emailRecommendations,
+          splitStrategy: emailSplitStrategy,
+        })
+      } catch (emailError) {
+        console.error('Failed to send recommendation email:', emailError)
+        // Don't fail the request if email fails
       }
     }
 

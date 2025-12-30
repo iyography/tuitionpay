@@ -640,6 +640,19 @@ export default function HomePage() {
               Our tool recommends the best option based on <span className="font-medium">your</span> preferences.
             </p>
           </motion.div>
+
+          {/* Pay in Full Note */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+            className="max-w-3xl mx-auto mt-6 text-center"
+          >
+            <p className="text-sm text-amber-700 bg-amber-50 px-4 py-3 rounded-lg border border-amber-200">
+              <strong>Note:</strong> These savings assume you pay off your credit card balance in full to avoid interest charges.
+            </p>
+          </motion.div>
         </div>
       </section>
 

@@ -157,6 +157,23 @@ export default function ResultsPage() {
           </Card>
         </motion.div>
 
+        {/* Pay in Full Warning */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.12 }}
+          className="mb-8"
+        >
+          <Alert className="bg-red-50 border-red-200 border-l-4 border-l-red-500">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-800">
+              <strong>Important:</strong> These savings assume you pay off your credit card balance in full each month.
+              Paying interest on a balance will significantly reduce or eliminate your rewards savings.
+              Only charge what you can afford to pay off immediately.
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+
         {/* Split Strategy Section */}
         {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0) && (
           <motion.div
@@ -427,6 +444,17 @@ export default function ResultsPage() {
                   <p className="font-medium">Return to pay your tuition</p>
                   <p className="text-sm text-muted-foreground">
                     Come back to TuitionPay and use your new card to pay. Your tuition counts toward your signup bonus!
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-600 text-white text-sm font-bold">
+                  4
+                </div>
+                <div>
+                  <p className="font-medium text-red-700">Pay off your balance in full</p>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Critical:</strong> Pay your credit card bill in full before interest charges. Carrying a balance will reduce or eliminate your savings.
                   </p>
                 </div>
               </div>

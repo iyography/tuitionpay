@@ -58,6 +58,7 @@ export const assessmentSchema = z.object({
   schoolName: z.string().min(1),
   studentName: z.string().min(2),
   studentIdentifier: z.string().optional(),
+  parentEmail: z.string().email().optional(),
   tuitionAmount: z.number().min(100).max(100000),
   creditScoreRange: z.enum(['excellent', 'good', 'fair', 'below']),
   currentCards: z.array(z.string()),
