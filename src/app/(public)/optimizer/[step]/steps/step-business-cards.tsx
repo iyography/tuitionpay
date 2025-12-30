@@ -3,9 +3,10 @@
 import { useEffect } from 'react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import type { AssessmentData } from '@/types/assessment'
 import { cn } from '@/lib/utils'
-import { Briefcase, User } from 'lucide-react'
+import { Briefcase, User, Lightbulb, CheckCircle2 } from 'lucide-react'
 
 interface StepBusinessCardsProps {
   data: AssessmentData
@@ -28,7 +29,7 @@ export function StepBusinessCards({ data, updateData, setCanProceed }: StepBusin
       <div>
         <p className="text-sm text-muted-foreground mb-4">
           Business credit cards often have the best signup bonuses and rewards.
-          You don&apos;t need a formal business - freelancers, side hustlers, and even eBay sellers qualify.
+          You don&apos;t need a formal business to qualify!
         </p>
       </div>
 
@@ -84,12 +85,45 @@ export function StepBusinessCards({ data, updateData, setCanProceed }: StepBusin
         </div>
       </RadioGroup>
 
-      <div className="p-4 bg-muted rounded-lg">
-        <p className="text-sm text-muted-foreground">
-          <strong>Did you know?</strong> Many people qualify for business cards without realizing it.
-          If you&apos;ve ever sold items online, done freelance work, or have any side income, you likely qualify.
-        </p>
-      </div>
+      <Alert className="bg-amber-50 border-amber-200">
+        <Lightbulb className="h-4 w-4 text-amber-600" />
+        <AlertDescription className="text-amber-800">
+          <strong className="block mb-2">Who qualifies for a business card?</strong>
+          <p className="mb-2">
+            You do NOT need an LLC, EIN, or formal business structure. If you have <em>any</em> of the following, you likely qualify:
+          </p>
+          <ul className="space-y-1 ml-4">
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>Sell items online (eBay, Etsy, Amazon, Facebook Marketplace)</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>Do freelance or consulting work of any kind</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>Rent out property, even just a room on Airbnb</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>Drive for Uber, Lyft, DoorDash, or similar</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>Have any side hustle, hobby business, or plan to start one</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <span>Tutor, babysit, pet sit, or do odd jobs for income</span>
+            </li>
+          </ul>
+          <p className="mt-3 text-sm">
+            <strong>When applying:</strong> Use your own name as the business name (sole proprietorship),
+            your Social Security Number, and your home address. Business income can be $0 if you&apos;re just starting out.
+          </p>
+        </AlertDescription>
+      </Alert>
     </div>
   )
 }

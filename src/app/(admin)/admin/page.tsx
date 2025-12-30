@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/table'
 import {
   DollarSign,
-  TrendingUp,
   Clock,
   CheckCircle,
   Users,
@@ -27,7 +26,6 @@ interface DashboardMetrics {
   totalPayments: number
   totalRevenue: number
   pendingPayments: number
-  revenueShare: number
   studentCount: number
 }
 
@@ -119,7 +117,6 @@ export default function AdminDashboard() {
           totalPayments: completedPayments.length,
           totalRevenue: completedPayments.reduce((sum, p) => sum + Number(p.amount), 0),
           pendingPayments: pendingPayments.length,
-          revenueShare: completedPayments.reduce((sum, p) => sum + Number(p.revenue_share_amount || 0), 0),
           studentCount: students?.length || 0,
         })
       }
@@ -213,7 +210,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Metrics Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -242,27 +239,6 @@ export default function AdminDashboard() {
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue Share</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-primary">
-                {formatCurrency(metrics?.revenueShare || 0)}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {school?.revenue_share_percentage || 1.5}% of payments
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pending</CardTitle>
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -280,7 +256,7 @@ export default function AdminDashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.2 }}
         >
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -303,7 +279,7 @@ export default function AdminDashboard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
+        transition={{ delay: 0.3 }}
       >
         <Card>
           <CardHeader>

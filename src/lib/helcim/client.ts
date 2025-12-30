@@ -5,8 +5,8 @@ import type {
 } from './types'
 import * as mock from './mock'
 
-// Environment check - use mock in development or when API key is not set
-const USE_MOCK = process.env.NODE_ENV === 'development' || !process.env.HELCIM_API_KEY
+// Environment check - use mock in development or when API token is not set
+const USE_MOCK = process.env.NODE_ENV === 'development' || !process.env.HELCIM_API_TOKEN
 
 // Helcim API base URL
 const HELCIM_API_URL = 'https://api.helcim.com/v2'
@@ -15,7 +15,7 @@ const HELCIM_API_URL = 'https://api.helcim.com/v2'
 function getHeaders(): HeadersInit {
   return {
     'Content-Type': 'application/json',
-    'api-token': process.env.HELCIM_API_KEY || '',
+    'api-token': process.env.HELCIM_API_TOKEN || '',
   }
 }
 

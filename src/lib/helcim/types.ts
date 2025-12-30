@@ -48,3 +48,26 @@ export interface HelcimHostedPageConfig {
   returnUrl: string
   cancelUrl: string
 }
+
+export interface HelcimCheckoutSession {
+  checkoutToken: string
+  secretToken: string
+}
+
+export interface HelcimPayInitializeResponse {
+  checkoutToken: string
+  secretToken: string
+}
+
+export interface HelcimTransactionResult {
+  transactionId: string
+  cardToken?: string
+  status: 'APPROVED' | 'DECLINED' | 'ERROR'
+  type: string
+  amount: number
+  currency: string
+  cardNumber: string
+  cardType: string
+  approvalCode?: string
+  dateCreated: string
+}

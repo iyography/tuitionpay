@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { SchoolSelector } from '@/components/forms/school-selector'
-import { PaymentForm, type PaymentData } from '@/components/forms/payment-form'
+import { HelcimPaymentForm } from '@/components/forms/helcim-payment-form'
 import { ArrowLeft, ArrowRight, DollarSign, School, User } from 'lucide-react'
 
 type PaymentStep = 'school' | 'student' | 'amount' | 'payment'
@@ -29,7 +29,7 @@ function PayPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState<PaymentStep>('school')
-  const [isProcessing, setIsProcessing] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
     schoolId: '',
     schoolName: '',
@@ -92,30 +92,12 @@ function PayPageContent() {
     }
   }
 
-  const handlePayment = async (paymentData: PaymentData) => {
-    setIsProcessing(true)
-    try {
-      const response = await fetch('/api/payments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...paymentInfo,
-          ...paymentData,
-        }),
-      })
+  const handlePaymentSuccess = (transactionId: string) => {
+    router.push(`/pay/confirmation?transactionId=${transactionId}`)
+  }
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Payment failed')
-      }
-
-      const result = await response.json()
-      router.push(`/pay/confirmation?transactionId=${result.transactionId}`)
-    } catch (error) {
-      throw error
-    } finally {
-      setIsProcessing(false)
-    }
+  const handlePaymentError = (error: string) => {
+    setPaymentError(error)
   }
 
   const renderStep = () => {
@@ -245,12 +227,15 @@ function PayPageContent() {
 
       case 'payment':
         return (
-          <PaymentForm
+          <HelcimPaymentForm
             amount={paymentInfo.amount}
+            schoolId={paymentInfo.schoolId}
             schoolName={paymentInfo.schoolName}
             studentName={paymentInfo.studentName}
-            onSubmit={handlePayment}
-            isProcessing={isProcessing}
+            studentIdentifier={paymentInfo.studentIdentifier}
+            parentEmail={paymentInfo.parentEmail}
+            onSuccess={handlePaymentSuccess}
+            onError={handlePaymentError}
           />
         )
 

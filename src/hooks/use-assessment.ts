@@ -10,11 +10,15 @@ const defaultAssessment: AssessmentData = {
   schoolName: '',
   studentName: '',
   studentIdentifier: '',
+  parentEmail: '',
   tuitionAmount: 0,
   creditScoreRange: 'good',
+  recentCardApplications: '0',
   currentCards: [],
   monthlySpendCapacity: 0,
   preferredRewardsType: 'flexible',
+  preferredAirlines: [],
+  preferredHotels: [],
   openToBusinessCards: false,
 }
 

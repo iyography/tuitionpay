@@ -11,6 +11,7 @@ import { StepSchool } from './steps/step-school'
 import { StepStudent } from './steps/step-student'
 import { StepTuition } from './steps/step-tuition'
 import { StepCreditScore } from './steps/step-credit-score'
+import { StepRecentApplications } from './steps/step-recent-applications'
 import { StepCurrentCards } from './steps/step-current-cards'
 import { StepSpendCapacity } from './steps/step-spend-capacity'
 import { StepRewardsType } from './steps/step-rewards-type'
@@ -83,12 +84,14 @@ export default function WizardStepPage() {
       case 4:
         return <StepCreditScore {...stepProps} />
       case 5:
-        return <StepCurrentCards {...stepProps} />
+        return <StepRecentApplications {...stepProps} />
       case 6:
-        return <StepSpendCapacity {...stepProps} />
+        return <StepCurrentCards {...stepProps} />
       case 7:
-        return <StepRewardsType {...stepProps} />
+        return <StepSpendCapacity {...stepProps} />
       case 8:
+        return <StepRewardsType {...stepProps} />
+      case 9:
         return <StepBusinessCards {...stepProps} />
       default:
         return null

@@ -28,6 +28,7 @@ import { DEMO_MODE, getDemoTransactionsForSchool, demoAdmin } from '@/lib/demo-d
 interface TransactionWithStudent {
   id: string
   student_name?: string
+  student_identifier?: string | null
   parent_email?: string
   amount: number
   helcim_transaction_id?: string | null
@@ -97,7 +98,7 @@ export default function TransactionsPage() {
         const studentIds = [...new Set(data.map(p => p.student_id))]
         const { data: studentsData } = await supabase
           .from('students')
-          .select('id, student_name, parent_email')
+          .select('id, student_name, student_identifier, parent_email')
           .in('id', studentIds)
 
         const studentMap = new Map(studentsData?.map(s => [s.id, s]) || [])
@@ -105,6 +106,7 @@ export default function TransactionsPage() {
         setTransactions(data.map(p => ({
           id: p.id,
           student_name: studentMap.get(p.student_id)?.student_name || 'Unknown',
+          student_identifier: studentMap.get(p.student_id)?.student_identifier || null,
           parent_email: studentMap.get(p.student_id)?.parent_email || '',
           amount: Number(p.amount),
           helcim_transaction_id: p.helcim_transaction_id,
@@ -129,6 +131,7 @@ export default function TransactionsPage() {
       filtered = filtered.filter(
         (t) =>
           t.student_name?.toLowerCase().includes(search) ||
+          t.student_identifier?.toLowerCase().includes(search) ||
           t.parent_email?.toLowerCase().includes(search) ||
           t.helcim_transaction_id?.toLowerCase().includes(search)
       )
@@ -161,11 +164,12 @@ export default function TransactionsPage() {
   }
 
   const exportToCSV = () => {
-    const headers = ['Date', 'Transaction ID', 'Student', 'Email', 'Amount', 'Fee', 'Status']
+    const headers = ['Date', 'Transaction ID', 'Student', 'Student ID', 'Email', 'Amount', 'Fee', 'Status']
     const rows = filteredTransactions.map((t) => [
       new Date(t.created_at).toISOString(),
       t.helcim_transaction_id || '',
       t.student_name || '',
+      t.student_identifier || '',
       t.parent_email || '',
       t.amount,
       t.processing_fee || 0,
@@ -311,6 +315,7 @@ export default function TransactionsPage() {
                       <TableHead>Date</TableHead>
                       <TableHead>Transaction ID</TableHead>
                       <TableHead>Student</TableHead>
+                      <TableHead>Student ID</TableHead>
                       <TableHead>Email</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
                       <TableHead className="text-right">Fee</TableHead>
@@ -329,6 +334,9 @@ export default function TransactionsPage() {
                         </TableCell>
                         <TableCell className="font-medium">
                           {tx.student_name || 'N/A'}
+                        </TableCell>
+                        <TableCell className="font-mono text-sm text-muted-foreground">
+                          {tx.student_identifier || '-'}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {tx.parent_email || 'N/A'}

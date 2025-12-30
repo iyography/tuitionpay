@@ -25,7 +25,10 @@ import {
   ExternalLink,
   Layers,
   Sparkles,
+  Users,
+  AlertCircle,
 } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAssessment } from '@/hooks/use-assessment'
 import type { CardRecommendationResult } from '@/types/cards'
 import { formatCurrency, generateSavingsExplanation, type SplitStrategy } from '@/lib/matching/card-engine'
@@ -438,6 +441,49 @@ export default function ResultsPage() {
               </div>
             </CardContent>
           </Card>
+        </motion.div>
+
+        {/* Spouse/Partner Reminder */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-8"
+        >
+          <Alert className="bg-blue-50 border-blue-200">
+            <Users className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800">
+              <strong>Have a spouse or partner?</strong> They should fill out this survey separately!
+              Each person in your household can earn their own signup bonuses, potentially doubling
+              your family&apos;s rewards. Have them visit{' '}
+              <Link href="/optimizer" className="underline font-medium">
+                TuitionPay.ai/optimizer
+              </Link>{' '}
+              to get their personalized recommendations.
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+
+        {/* Important Warnings */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mt-6"
+        >
+          <Alert className="bg-amber-50 border-amber-200">
+            <AlertCircle className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800 space-y-2">
+              <p><strong>Important Application Tips:</strong></p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Apply for cards before making your tuition payment to ensure approval</li>
+                <li>If applying for business cards: use your legal name as business name, your SSN, and home address</li>
+                <li>Wait until you receive your physical card before making the tuition payment</li>
+                <li>Pay off your balance in full to avoid interest charges that would reduce your savings</li>
+                <li>Don&apos;t apply for too many cards at once - space applications 30-90 days apart if possible</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
         </motion.div>
       </div>
     </div>

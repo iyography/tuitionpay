@@ -60,6 +60,7 @@ CREATE TABLE IF NOT EXISTS credit_cards (
   min_credit_score INTEGER,
   is_business_card BOOLEAN DEFAULT FALSE,
   application_url TEXT,
+  benefits TEXT,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -259,27 +260,32 @@ CREATE TRIGGER update_credit_cards_updated_at
   EXECUTE FUNCTION update_updated_at_column();
 
 -- ============================================
--- SEED DATA (Sample Credit Cards)
+-- SEED DATA (Real Credit Cards Database)
 -- ============================================
 
-INSERT INTO credit_cards (card_name, issuer, signup_bonus_value, signup_bonus_requirement, signup_bonus_timeframe, annual_fee, first_year_waived, rewards_rate, rewards_type, min_credit_score, is_business_card, is_active) VALUES
--- Personal Cards
-('Chase Sapphire Preferred', 'Chase', 750, 'Spend $4,000', '3 months', 95, FALSE, 2, 'travel_points', 720, FALSE, TRUE),
-('Chase Sapphire Reserve', 'Chase', 600, 'Spend $4,000', '3 months', 550, FALSE, 3, 'travel_points', 750, FALSE, TRUE),
-('American Express Gold', 'American Express', 600, 'Spend $6,000', '6 months', 250, FALSE, 4, 'points', 700, FALSE, TRUE),
-('American Express Platinum', 'American Express', 800, 'Spend $8,000', '6 months', 695, FALSE, 5, 'travel_points', 750, FALSE, TRUE),
-('Capital One Venture X', 'Capital One', 750, 'Spend $4,000', '3 months', 395, FALSE, 2, 'travel_points', 720, FALSE, TRUE),
-('Capital One Venture', 'Capital One', 750, 'Spend $4,000', '3 months', 95, FALSE, 2, 'travel_points', 700, FALSE, TRUE),
-('Citi Double Cash', 'Citi', 200, 'Spend $1,500', '6 months', 0, FALSE, 2, 'cash_back', 680, FALSE, TRUE),
-('Chase Freedom Unlimited', 'Chase', 200, 'Spend $500', '3 months', 0, FALSE, 1.5, 'cash_back', 680, FALSE, TRUE),
-('Bank of America Premium Rewards', 'Bank of America', 500, 'Spend $3,000', '3 months', 95, FALSE, 2, 'travel_points', 700, FALSE, TRUE),
-('Wells Fargo Active Cash', 'Wells Fargo', 200, 'Spend $500', '3 months', 0, FALSE, 2, 'cash_back', 670, FALSE, TRUE),
-('Discover it Cash Back', 'Discover', 150, 'First year cashback match', '12 months', 0, FALSE, 5, 'cash_back', 650, FALSE, TRUE),
--- Business Cards
-('Chase Ink Business Preferred', 'Chase', 1000, 'Spend $8,000', '3 months', 95, FALSE, 3, 'points', 720, TRUE, TRUE),
-('Chase Ink Business Unlimited', 'Chase', 750, 'Spend $6,000', '3 months', 0, FALSE, 1.5, 'cash_back', 700, TRUE, TRUE),
-('American Express Business Gold', 'American Express', 700, 'Spend $10,000', '3 months', 295, FALSE, 4, 'points', 700, TRUE, TRUE),
-('Capital One Spark Cash Plus', 'Capital One', 1200, 'Spend $30,000', '3 months', 150, FALSE, 2, 'cash_back', 720, TRUE, TRUE);
+INSERT INTO credit_cards (card_name, issuer, signup_bonus_value, signup_bonus_requirement, signup_bonus_timeframe, annual_fee, first_year_waived, rewards_rate, rewards_type, category_bonuses, min_credit_score, is_business_card, benefits, is_active) VALUES
+-- BUSINESS CARDS
+('AMEX Business Platinum', 'American Express', 2400, 'Spend $20,000', '3 months', 895, FALSE, 2, 'points', '{"travel": 5, "flights": 5, "hotels": 1}'::jsonb, 720, TRUE, '$600 AMEX Travel Hotel Credit, $200 Hilton Credit, $150 Dell Credit, $120 Cell Phone Credit', TRUE),
+('AMEX Business Gold', 'American Express', 1150, 'Spend $15,000', '3 months', 395, FALSE, 4, 'points', '{"restaurants": 4, "shipping": 4, "advertising": 4, "technology": 4}'::jsonb, 700, TRUE, '$250 Flexible Business Credit (GrubHub, Office Supplies)', TRUE),
+('AMEX Blue Business Cash', 'American Express', 310, 'Spend $3,000', '3 months', 0, FALSE, 2, 'cash_back', '{"all_purchases": 2}'::jsonb, 670, TRUE, NULL, TRUE),
+('AMEX Delta Gold Business', 'American Express', 600, 'Spend $4,000', '3 months', 0, FALSE, 2, 'miles', '{"delta": 2, "restaurants": 2}'::jsonb, 680, TRUE, '15% off Mile Redemption flights, First checked bag free', TRUE),
+('AMEX Marriott Bonvoy Business', 'American Express', 543, 'Spend $9,000', '3 months', 125, FALSE, 6, 'points', '{"marriott": 6, "all_purchases": 2}'::jsonb, 700, TRUE, NULL, TRUE),
+('Capital One Spark 2% Cash Plus', 'Capital One', 2450, 'Spend $30,000', '3 months', 150, FALSE, 2, 'cash_back', '{"all_purchases": 2}'::jsonb, 720, TRUE, NULL, TRUE),
+('Capital One Spark Cash', 'Capital One', 1200, 'Spend $10,000', '3 months', 0, FALSE, 2, 'cash_back', '{"all_purchases": 2}'::jsonb, 700, TRUE, NULL, TRUE),
+('Capital One Cash Select', 'Capital One', 840, 'Spend $6,000', '3 months', 0, FALSE, 1.5, 'cash_back', '{"all_purchases": 1.5}'::jsonb, 680, TRUE, NULL, TRUE),
+('Chase Ink Business Unlimited', 'Chase', 840, 'Spend $6,000', '3 months', 0, FALSE, 1.5, 'cash_back', '{"all_purchases": 1.5}'::jsonb, 700, TRUE, NULL, TRUE),
+('Chase Ink Business Cash', 'Chase', 840, 'Spend $6,000', '3 months', 0, FALSE, 5, 'cash_back', '{"office_supplies": 5, "internet": 5, "phone": 5, "all_purchases": 1}'::jsonb, 700, TRUE, NULL, TRUE),
+('Chase Ink Business Preferred', 'Chase', 1100, 'Spend $10,000', '3 months', 95, FALSE, 3, 'points', '{"travel": 3, "shipping": 3, "advertising": 3, "internet": 3}'::jsonb, 720, TRUE, NULL, TRUE),
+('Chase Ink Business Premier', 'Chase', 1250, 'Spend $10,000', '3 months', 195, FALSE, 2.5, 'points', '{"all_purchases": 2.5}'::jsonb, 720, TRUE, NULL, TRUE),
+('Chase Southwest Business Premier', 'Chase', 706, 'Spend $3,000', '3 months', 149, FALSE, 2, 'points', '{"southwest": 3, "rapid_rewards": 2}'::jsonb, 700, TRUE, 'First Checked Bag Free, Companion Pass eligible', TRUE),
+-- PERSONAL CARDS
+('Chase Sapphire Preferred', 'Chase', 800, 'Spend $5,000', '3 months', 95, FALSE, 3, 'points', '{"travel": 3, "dining": 3, "streaming": 3, "groceries": 3}'::jsonb, 720, FALSE, '$50 Chase Travel Hotel Credit, Free DashPass', TRUE),
+('Chase Southwest Rapid Rewards Plus', 'Chase', 636, 'Spend $1,000', '3 months', 99, FALSE, 2, 'points', '{"southwest": 2, "rapid_rewards": 2}'::jsonb, 700, FALSE, 'First Checked Bag Free, Companion Pass eligible', TRUE),
+('Chase United Explorer', 'Chase', 666, 'Spend $3,000', '3 months', 0, TRUE, 2, 'miles', '{"united": 2, "travel": 2}'::jsonb, 700, FALSE, 'First Checked Bag Free, Priority Boarding', TRUE),
+('AMEX Blue Cash Everyday', 'American Express', 160, 'Spend $2,000', '3 months', 0, FALSE, 3, 'cash_back', '{"groceries": 3, "gas": 2, "online": 3}'::jsonb, 670, FALSE, '$7/mo Disney, Hulu, or ESPN Annual Credit', TRUE),
+('AMEX Delta Gold', 'American Express', 540, 'Spend $2,000', '3 months', 0, TRUE, 2, 'miles', '{"delta": 2, "restaurants": 2}'::jsonb, 680, FALSE, '15% off Mile Redemption flights, First checked bag free', TRUE),
+('Citi AAdvantage Platinum Select', 'Citi', 607, 'Spend $2,500', '3 months', 0, TRUE, 2, 'miles', '{"american_airlines": 2, "gas": 2, "restaurants": 2}'::jsonb, 700, FALSE, 'First Checked Bag Free, Priority Boarding', TRUE),
+('Citi Double Cash', 'Citi', 230, 'Spend $1,500', '6 months', 0, FALSE, 2, 'cash_back', '{"all_purchases": 2}'::jsonb, 680, FALSE, NULL, TRUE);
 
 -- ============================================
 -- SEED DATA (Sample Schools)

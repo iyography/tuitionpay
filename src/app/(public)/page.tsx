@@ -234,8 +234,8 @@ export default function HomePage() {
                 variants={itemVariants}
                 className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed"
               >
-                Discover which credit cards will maximize your rewards when paying tuition.
-                Turn your largest annual expense into significant savings.
+                Turn your tuition payments into credit card rewards worth thousands.
+                Large, one-time payments like tuition are <strong>perfect</strong> for hitting signup bonus requirements.
               </motion.p>
 
               {/* CTA Buttons - Two Distinct Paths */}
@@ -325,7 +325,7 @@ export default function HomePage() {
                     </div>
                     <h3 className="text-2xl md:text-3xl font-bold mb-4">Credit Card AI Tool</h3>
                     <p className="text-muted-foreground text-lg mb-6 leading-relaxed">
-                      Answer a few quick questions and our AI will recommend the best credit cards to maximize your tuition savings.
+                      Answer a few quick questions and our AI will recommend the best credit cards to maximize your tuition savings. <em>Pro tip: Pay as much as possible at once for maximum rewards!</em>
                     </p>
                     <div className="flex flex-wrap justify-center gap-3 mb-8">
                       <span className="px-3 py-1 bg-amber-100 text-amber-700 rounded-full text-sm font-medium">2 Min Quiz</span>

@@ -10,6 +10,12 @@ export type RewardsPreference =
   | 'statement_credits'
   | 'flexible'
 
+export type RecentCardApplications =
+  | '0'
+  | '1-2'
+  | '3-4'
+  | '5+'
+
 export const CREDIT_SCORE_RANGES: Record<CreditScoreRange, { label: string; min: number; max: number }> = {
   excellent: { label: 'Excellent (750+)', min: 750, max: 850 },
   good: { label: 'Good (700-749)', min: 700, max: 749 },
@@ -24,16 +30,33 @@ export const REWARDS_PREFERENCES: Record<RewardsPreference, string> = {
   flexible: 'Flexible (Any)',
 }
 
+export const RECENT_CARD_OPTIONS: Record<RecentCardApplications, string> = {
+  '0': 'None',
+  '1-2': '1-2 cards',
+  '3-4': '3-4 cards',
+  '5+': '5 or more cards',
+}
+
+export const AIRLINE_PARTNERS = [
+  'American Airlines',
+  'Delta',
+  'United',
+  'Southwest',
+  'Any / No Preference',
+] as const
+
+export const HOTEL_PARTNERS = [
+  'Hyatt (Best Value)',
+  'Marriott',
+  'Any / No Preference',
+] as const
+
+// Only include issuers we have cards for
 export const MAJOR_CARD_ISSUERS = [
   'Chase',
   'American Express',
   'Capital One',
   'Citi',
-  'Bank of America',
-  'Wells Fargo',
-  'Discover',
-  'US Bank',
-  'Barclays',
 ] as const
 
 export interface AssessmentData {
@@ -44,6 +67,7 @@ export interface AssessmentData {
   // Step 2: Student Info
   studentName: string
   studentIdentifier?: string
+  parentEmail: string
 
   // Step 3: Tuition Amount
   tuitionAmount: number
@@ -51,16 +75,21 @@ export interface AssessmentData {
   // Step 4: Credit Score
   creditScoreRange: CreditScoreRange
 
-  // Step 5: Current Cards
+  // Step 5: Recent Card Applications (last 24 months)
+  recentCardApplications: RecentCardApplications
+
+  // Step 6: Current Cards
   currentCards: string[]
 
-  // Step 6: Monthly Spend Capacity
+  // Step 7: Monthly Spend Capacity
   monthlySpendCapacity: number
 
-  // Step 7: Rewards Preference
+  // Step 8: Rewards Preference
   preferredRewardsType: RewardsPreference
+  preferredAirlines?: string[]
+  preferredHotels?: string[]
 
-  // Step 8: Business Cards
+  // Step 9: Business Cards
   openToBusinessCards: boolean
 }
 
@@ -75,10 +104,11 @@ export const ASSESSMENT_STEPS: AssessmentStep[] = [
   { id: 2, title: 'Student Info', description: 'Enter student details' },
   { id: 3, title: 'Tuition Amount', description: 'How much are you paying?' },
   { id: 4, title: 'Credit Score', description: 'Your credit score range' },
-  { id: 5, title: 'Current Cards', description: 'Cards you already have' },
-  { id: 6, title: 'Spend Capacity', description: 'Monthly spending ability' },
-  { id: 7, title: 'Rewards Type', description: 'Your reward preference' },
-  { id: 8, title: 'Business Cards', description: 'Open to business cards?' },
+  { id: 5, title: 'Recent Applications', description: 'Cards in last 24 months' },
+  { id: 6, title: 'Current Cards', description: 'Cards you already have' },
+  { id: 7, title: 'Spend Capacity', description: 'Monthly spending ability' },
+  { id: 8, title: 'Rewards Type', description: 'Your reward preference' },
+  { id: 9, title: 'Business Cards', description: 'Open to business cards?' },
 ]
 
-export const WIZARD_TOTAL_STEPS = 8
+export const WIZARD_TOTAL_STEPS = 9

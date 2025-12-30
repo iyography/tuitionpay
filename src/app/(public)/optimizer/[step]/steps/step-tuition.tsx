@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { DollarSign, TrendingUp } from 'lucide-react'
 import type { AssessmentData } from '@/types/assessment'
 
 interface StepTuitionProps {
@@ -43,6 +45,13 @@ export function StepTuition({ data, updateData, setCanProceed }: StepTuitionProp
 
   return (
     <div className="space-y-6">
+      <Alert className="bg-green-50 border-green-200">
+        <TrendingUp className="h-4 w-4 text-green-600" />
+        <AlertDescription className="text-green-800">
+          <strong>Bigger payments = Bigger rewards!</strong> Credit card signup bonuses are maximized when you make large, one-time payments like tuition. Paying in full (or as much as possible at once) helps you hit bonus requirements faster.
+        </AlertDescription>
+      </Alert>
+
       <div className="space-y-2">
         <Label htmlFor="tuition">Total Tuition Amount You&apos;re Paying *</Label>
         <div className="relative">
@@ -62,24 +71,32 @@ export function StepTuition({ data, updateData, setCanProceed }: StepTuitionProp
           />
         </div>
         <p className="text-xs text-muted-foreground">
-          Enter the annual tuition amount or the total you plan to pay.
+          Enter the full amount you plan to pay with your credit card. The larger the payment, the more rewards you can earn.
         </p>
       </div>
 
       {data.tuitionAmount > 0 && (
-        <div className="p-4 bg-primary/5 rounded-lg">
+        <div className="p-4 bg-primary/5 rounded-lg space-y-2">
+          <div className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5 text-primary" />
+            <p className="text-sm">
+              <span className="text-muted-foreground">Payment amount: </span>
+              <span className="font-semibold">
+                ${data.tuitionAmount.toLocaleString()}
+              </span>
+            </p>
+          </div>
           <p className="text-sm">
-            <span className="text-muted-foreground">Tuition amount: </span>
-            <span className="font-semibold">
-              ${data.tuitionAmount.toLocaleString()}
-            </span>
-          </p>
-          <p className="text-sm mt-1">
             <span className="text-muted-foreground">Potential savings (10-12%): </span>
             <span className="font-semibold text-primary">
               ${Math.round(data.tuitionAmount * 0.1).toLocaleString()} - ${Math.round(data.tuitionAmount * 0.12).toLocaleString()}
             </span>
           </p>
+          {data.tuitionAmount >= 5000 && (
+            <p className="text-xs text-green-600 font-medium mt-1">
+              Great! With ${data.tuitionAmount.toLocaleString()}, you can likely meet most signup bonus requirements.
+            </p>
+          )}
         </div>
       )}
     </div>
