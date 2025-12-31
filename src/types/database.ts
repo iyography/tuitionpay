@@ -135,6 +135,24 @@ export interface Database {
           application_url: string | null
           is_active: boolean
           benefits: string | null
+          notes: string | null
+          // Point valuations
+          point_cash_value: number | null
+          cash_value: number | null
+          delta_value: number | null
+          marriott_value: number | null
+          hyatt_value: number | null
+          southwest_value: number | null
+          united_value: number | null
+          aa_value: number | null
+          // Percentage returns
+          cash_back_pct: number | null
+          delta_pct: number | null
+          marriott_pct: number | null
+          hyatt_pct: number | null
+          united_pct: number | null
+          aa_pct: number | null
+          southwest_pct: number | null
           created_at: string
           updated_at: string
         }
@@ -155,6 +173,22 @@ export interface Database {
           application_url?: string | null
           is_active?: boolean
           benefits?: string | null
+          notes?: string | null
+          point_cash_value?: number | null
+          cash_value?: number | null
+          delta_value?: number | null
+          marriott_value?: number | null
+          hyatt_value?: number | null
+          southwest_value?: number | null
+          united_value?: number | null
+          aa_value?: number | null
+          cash_back_pct?: number | null
+          delta_pct?: number | null
+          marriott_pct?: number | null
+          hyatt_pct?: number | null
+          united_pct?: number | null
+          aa_pct?: number | null
+          southwest_pct?: number | null
           created_at?: string
           updated_at?: string
         }
@@ -171,10 +205,26 @@ export interface Database {
           rewards_type?: string | null
           category_bonuses?: Json | null
           benefits?: string | null
+          notes?: string | null
           min_credit_score?: number | null
           is_business_card?: boolean
           application_url?: string | null
           is_active?: boolean
+          point_cash_value?: number | null
+          cash_value?: number | null
+          delta_value?: number | null
+          marriott_value?: number | null
+          hyatt_value?: number | null
+          southwest_value?: number | null
+          united_value?: number | null
+          aa_value?: number | null
+          cash_back_pct?: number | null
+          delta_pct?: number | null
+          marriott_pct?: number | null
+          hyatt_pct?: number | null
+          united_pct?: number | null
+          aa_pct?: number | null
+          southwest_pct?: number | null
           created_at?: string
           updated_at?: string
         }

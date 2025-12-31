@@ -15,7 +15,6 @@ import {
   Mail,
   MapPin,
 } from 'lucide-react'
-import { DEMO_MODE, getDemoSchool, demoAdmin } from '@/lib/demo-data'
 import type { School } from '@/types/database'
 
 interface OnboardingStep {
@@ -36,14 +35,6 @@ export default function SettingsPage() {
 
   const fetchSchoolData = async () => {
     try {
-      if (DEMO_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 500))
-        const demoSchool = getDemoSchool(demoAdmin.school_id)
-        setSchool(demoSchool as School)
-        setIsLoading(false)
-        return
-      }
-
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
 
@@ -177,13 +168,6 @@ export default function SettingsPage() {
                 ) : (
                   <p className="text-muted-foreground">Not set</p>
                 )}
-              </div>
-
-              <Separator />
-
-              <div>
-                <label className="text-sm text-muted-foreground">Revenue Share</label>
-                <p className="font-medium">{school?.revenue_share_percentage}%</p>
               </div>
 
               <Separator />

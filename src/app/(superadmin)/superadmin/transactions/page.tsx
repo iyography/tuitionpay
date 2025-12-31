@@ -23,7 +23,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Download, Search, Filter } from 'lucide-react'
-import { DEMO_MODE, getAllDemoTransactions, demoSchools } from '@/lib/demo-data'
 
 interface TransactionWithStudent {
   id: string
@@ -57,49 +56,27 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
-      if (DEMO_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 600))
-        const demoTxns = getAllDemoTransactions()
-        const schoolMap = new Map(demoSchools.map(s => [s.id, s.name]))
-        setTransactions(demoTxns.map(t => ({
-          id: t.id,
-          school_name: schoolMap.get(t.school_id) || 'Unknown School',
-          student_name: t.student_name,
-          parent_email: t.parent_email,
-          amount: t.amount,
-          helcim_transaction_id: t.helcim_transaction_id,
-          card_last_four: t.card_last_four,
-          processing_fee: t.processing_fee,
-          revenue_share_amount: t.revenue_share_amount,
-          status: t.status,
-          created_at: t.created_at
-        })))
-        setIsLoading(false)
-        return
-      }
-
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
 
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const { data: adminData } = await supabase
-        .from('school_admins')
-        .select('school_id')
-        .eq('id', user.id)
-        .single()
-
-      if (!adminData) return
-
-      const { data } = await supabase
+      // Fetch all payments (superadmin sees all)
+      const { data: payments } = await supabase
         .from('payments')
         .select('*')
-        .eq('school_id', adminData.school_id)
         .order('created_at', { ascending: false })
 
-      if (data) {
-        const studentIds = [...new Set(data.map(p => p.student_id))]
+      if (payments) {
+        // Get all school IDs
+        const schoolIds = [...new Set(payments.map(p => p.school_id))]
+        const { data: schoolsData } = await supabase
+          .from('schools')
+          .select('id, name')
+          .in('id', schoolIds)
+
+        const schoolMap = new Map(schoolsData?.map(s => [s.id, s.name]) || [])
+
+        // Get all student IDs
+        const studentIds = [...new Set(payments.map(p => p.student_id))]
         const { data: studentsData } = await supabase
           .from('students')
           .select('id, student_name, parent_email')
@@ -107,14 +84,16 @@ export default function TransactionsPage() {
 
         const studentMap = new Map(studentsData?.map(s => [s.id, s]) || [])
 
-        setTransactions(data.map(p => ({
+        setTransactions(payments.map(p => ({
           id: p.id,
+          school_name: schoolMap.get(p.school_id) || 'Unknown School',
           student_name: studentMap.get(p.student_id)?.student_name || 'Unknown',
           parent_email: studentMap.get(p.student_id)?.parent_email || '',
           amount: Number(p.amount),
           helcim_transaction_id: p.helcim_transaction_id,
           card_last_four: p.card_last_four,
           processing_fee: p.processing_fee ? Number(p.processing_fee) : null,
+          revenue_share_amount: p.revenue_share_amount ? Number(p.revenue_share_amount) : null,
           status: p.status,
           created_at: p.created_at
         })))
@@ -241,9 +220,6 @@ export default function TransactionsPage() {
           <h1 className="text-3xl font-bold">All Transactions</h1>
           <p className="text-muted-foreground">
             Platform-wide payment transactions across all schools
-            {DEMO_MODE && (
-              <Badge variant="outline" className="ml-2 text-xs bg-violet-100 text-violet-700 border-violet-200">Demo</Badge>
-            )}
           </p>
         </div>
         <Button onClick={exportToCSV} className="gap-2">

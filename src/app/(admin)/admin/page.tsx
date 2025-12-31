@@ -19,7 +19,6 @@ import {
   CheckCircle,
   Users,
 } from 'lucide-react'
-import { DEMO_MODE, getDemoSchool, getDemoMetrics, getDemoTransactionsForSchool, demoAdmin } from '@/lib/demo-data'
 import type { School } from '@/types/database'
 
 interface DashboardMetrics {
@@ -50,30 +49,6 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      if (DEMO_MODE) {
-        // Use demo data
-        await new Promise(resolve => setTimeout(resolve, 800))
-
-        const schoolId = demoAdmin.school_id
-        const demoSchool = getDemoSchool(schoolId)
-        const demoMetrics = getDemoMetrics(schoolId)
-        const transactions = getDemoTransactionsForSchool(schoolId)
-
-        setSchool(demoSchool as School)
-        setMetrics(demoMetrics)
-        setRecentPayments(transactions.slice(0, 10).map(t => ({
-          id: t.id,
-          student_name: t.student_name,
-          amount: t.amount,
-          processing_fee: t.processing_fee,
-          status: t.status,
-          created_at: t.created_at
-        })))
-        setIsLoading(false)
-        return
-      }
-
-      // Real Supabase fetch
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
 
@@ -203,9 +178,6 @@ export default function AdminDashboard() {
         <h1 className="text-3xl font-bold">{school?.name || 'Dashboard'}</h1>
         <p className="text-muted-foreground">
           Welcome to your payment dashboard
-          {DEMO_MODE && (
-            <Badge variant="outline" className="ml-2 text-xs">Demo Mode</Badge>
-          )}
         </p>
       </div>
 

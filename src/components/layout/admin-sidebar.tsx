@@ -18,7 +18,6 @@ import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { DEMO_MODE } from '@/lib/demo-data'
 
 // School admin only sees Dashboard, Transactions, and Settings
 const navItems = [
@@ -33,11 +32,6 @@ export function AdminSidebar() {
   const [collapsed, setCollapsed] = useState(false)
 
   const handleSignOut = async () => {
-    if (DEMO_MODE) {
-      sessionStorage.removeItem('demo_admin')
-      router.push('/login')
-      return
-    }
     const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')

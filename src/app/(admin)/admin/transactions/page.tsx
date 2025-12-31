@@ -23,7 +23,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Download, Search, Filter } from 'lucide-react'
-import { DEMO_MODE, getDemoTransactionsForSchool, demoAdmin } from '@/lib/demo-data'
 
 interface TransactionWithStudent {
   id: string
@@ -56,24 +55,6 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
-      if (DEMO_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 600))
-        const demoTxns = getDemoTransactionsForSchool(demoAdmin.school_id)
-        setTransactions(demoTxns.map(t => ({
-          id: t.id,
-          student_name: t.student_name,
-          parent_email: t.parent_email,
-          amount: t.amount,
-          helcim_transaction_id: t.helcim_transaction_id,
-          card_last_four: t.card_last_four,
-          processing_fee: t.processing_fee,
-          status: t.status,
-          created_at: t.created_at
-        })))
-        setIsLoading(false)
-        return
-      }
-
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
 

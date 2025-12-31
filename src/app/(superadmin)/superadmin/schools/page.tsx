@@ -17,16 +17,23 @@ import {
 } from '@/components/ui/table'
 import {
   Search,
-  School,
+  School as SchoolIcon,
   CheckCircle,
   Clock,
   XCircle,
   ExternalLink,
 } from 'lucide-react'
-import { DEMO_MODE, demoSchools } from '@/lib/demo-data'
+import type { School } from '@/types/database'
+
+interface SchoolWithAddress extends School {
+  address: {
+    city: string
+    state: string
+  }
+}
 
 export default function SchoolsPage() {
-  const [schools, setSchools] = useState<typeof demoSchools>([])
+  const [schools, setSchools] = useState<SchoolWithAddress[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -36,15 +43,28 @@ export default function SchoolsPage() {
 
   const fetchSchools = async () => {
     try {
-      if (DEMO_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 600))
-        setSchools(demoSchools)
-        setIsLoading(false)
-        return
-      }
-      setIsLoading(false)
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
+      const { data, error } = await supabase
+        .from('schools')
+        .select('*')
+        .order('name')
+
+      if (error) throw error
+
+      // Parse address for each school
+      const parsed = (data || []).map(school => ({
+        ...school,
+        address: typeof school.address === 'string'
+          ? JSON.parse(school.address)
+          : school.address as { city: string; state: string }
+      })) as SchoolWithAddress[]
+
+      setSchools(parsed)
     } catch (error) {
       console.error('Error fetching schools:', error)
+    } finally {
       setIsLoading(false)
     }
   }
@@ -100,9 +120,6 @@ export default function SchoolsPage() {
           <h1 className="text-3xl font-bold">Partner Schools</h1>
           <p className="text-muted-foreground">
             Manage all schools on the platform
-            {DEMO_MODE && (
-              <Badge variant="outline" className="ml-2 text-xs bg-violet-100 text-violet-700 border-violet-200">Demo</Badge>
-            )}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -150,7 +167,7 @@ export default function SchoolsPage() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-violet-100 flex items-center justify-center">
-                <School className="h-6 w-6 text-violet-600" />
+                <SchoolIcon className="h-6 w-6 text-violet-600" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{schools.length}</p>

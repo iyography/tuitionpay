@@ -35,7 +35,6 @@ import {
   Loader2,
   Building,
 } from 'lucide-react'
-import { DEMO_MODE, demoApplications } from '@/lib/demo-data'
 import type { SchoolApplication } from '@/types/database'
 
 type ApplicationWithAddress = SchoolApplication & {
@@ -60,17 +59,6 @@ export default function ApplicationsPage() {
 
   const fetchApplications = async () => {
     try {
-      if (DEMO_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 600))
-        const parsed = demoApplications.map(app => ({
-          ...app,
-          parsedAddress: app.address as ApplicationWithAddress['parsedAddress']
-        })) as ApplicationWithAddress[]
-        setApplications(parsed)
-        setIsLoading(false)
-        return
-      }
-
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { data, error } = await supabase
@@ -99,16 +87,6 @@ export default function ApplicationsPage() {
   const updateApplicationStatus = async (id: string, status: 'approved' | 'rejected') => {
     setIsUpdating(true)
     try {
-      if (DEMO_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setApplications(prev => prev.map(app =>
-          app.id === id ? { ...app, status } : app
-        ))
-        setSelectedApplication(null)
-        setIsUpdating(false)
-        return
-      }
-
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
       const { error } = await supabase

@@ -15,7 +15,6 @@ import {
   CheckCircle,
   Clock,
 } from 'lucide-react'
-import { DEMO_MODE, getPlatformMetrics, demoSchools, demoApplications } from '@/lib/demo-data'
 
 interface PlatformMetrics {
   totalSchools: number
@@ -29,8 +28,24 @@ interface PlatformMetrics {
   activeCreditCards: number
 }
 
+interface RecentApplication {
+  id: string
+  school_name: string
+  contact_email: string
+  status: string
+}
+
+interface RecentSchool {
+  id: string
+  name: string
+  address: { city: string; state: string }
+  status: string
+}
+
 export default function SuperAdminDashboard() {
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null)
+  const [recentApplications, setRecentApplications] = useState<RecentApplication[]>([])
+  const [recentSchools, setRecentSchools] = useState<RecentSchool[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -39,17 +54,74 @@ export default function SuperAdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      if (DEMO_MODE) {
-        await new Promise(resolve => setTimeout(resolve, 800))
-        setMetrics(getPlatformMetrics())
-        setIsLoading(false)
-        return
-      }
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
 
-      // Real Supabase fetch would go here
-      setIsLoading(false)
+      // Fetch schools
+      const { data: schoolsData } = await supabase.from('schools').select('*')
+      const schools = schoolsData || []
+
+      // Fetch applications
+      const { data: applicationsData } = await supabase.from('school_applications').select('*')
+      const applications = applicationsData || []
+
+      // Fetch payments
+      const { data: paymentsData } = await supabase.from('payments').select('*')
+      const payments = paymentsData || []
+
+      // Fetch students
+      const { data: studentsData } = await supabase.from('students').select('id')
+      const students = studentsData || []
+
+      // Fetch credit cards
+      const { data: cardsData } = await supabase.from('credit_cards').select('*').eq('is_active', true)
+      const cards = cardsData || []
+
+      // Calculate metrics
+      const completedPayments = payments.filter(p => p.status === 'completed')
+      const totalRevenue = completedPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+      const totalRevenueShare = completedPayments.reduce((sum, p) => sum + Number(p.revenue_share_amount || 0), 0)
+
+      setMetrics({
+        totalSchools: schools.length,
+        activeSchools: schools.filter(s => s.status === 'active').length,
+        pendingApplications: applications.filter(a => a.status === 'pending').length,
+        totalPayments: completedPayments.length,
+        totalRevenue,
+        totalRevenueShare,
+        pendingPayments: payments.filter(p => p.status === 'pending' || p.status === 'processing').length,
+        totalStudents: students.length,
+        activeCreditCards: cards.length,
+      })
+
+      // Set recent applications
+      setRecentApplications(
+        applications
+          .filter(a => a.status === 'pending')
+          .slice(0, 3)
+          .map(a => ({
+            id: a.id,
+            school_name: a.school_name,
+            contact_email: a.contact_email,
+            status: a.status,
+          }))
+      )
+
+      // Set recent schools
+      setRecentSchools(
+        schools
+          .filter(s => s.status === 'active')
+          .slice(0, 3)
+          .map(s => ({
+            id: s.id,
+            name: s.name,
+            address: typeof s.address === 'string' ? JSON.parse(s.address) : s.address as { city: string; state: string },
+            status: s.status,
+          }))
+      )
     } catch (error) {
       console.error('Error fetching dashboard data:', error)
+    } finally {
       setIsLoading(false)
     }
   }
@@ -83,9 +155,6 @@ export default function SuperAdminDashboard() {
         <h1 className="text-3xl font-bold">Platform Dashboard</h1>
         <p className="text-muted-foreground">
           TuitionPay Admin Overview
-          {DEMO_MODE && (
-            <Badge variant="outline" className="ml-2 text-xs bg-violet-100 text-violet-700 border-violet-200">Demo Mode</Badge>
-          )}
         </p>
       </div>
 
@@ -244,17 +313,21 @@ export default function SuperAdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {demoApplications.filter(a => a.status === 'pending').slice(0, 3).map((app) => (
-                  <div key={app.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="font-medium">{app.school_name}</p>
-                      <p className="text-sm text-muted-foreground">{app.contact_email}</p>
+                {recentApplications.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No pending applications</p>
+                ) : (
+                  recentApplications.map((app) => (
+                    <div key={app.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                      <div>
+                        <p className="font-medium">{app.school_name}</p>
+                        <p className="text-sm text-muted-foreground">{app.contact_email}</p>
+                      </div>
+                      <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                        Pending
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                      Pending
-                    </Badge>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>
@@ -272,18 +345,22 @@ export default function SuperAdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {demoSchools.filter(s => s.status === 'active').slice(0, 3).map((school) => (
-                  <div key={school.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                    <div>
-                      <p className="font-medium">{school.name}</p>
-                      <p className="text-sm text-muted-foreground">{school.address.city}, {school.address.state}</p>
+                {recentSchools.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">No active schools</p>
+                ) : (
+                  recentSchools.map((school) => (
+                    <div key={school.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                      <div>
+                        <p className="font-medium">{school.name}</p>
+                        <p className="text-sm text-muted-foreground">{school.address?.city}, {school.address?.state}</p>
+                      </div>
+                      <Badge className="bg-emerald-100 text-emerald-700 border-0">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Active
+                      </Badge>
                     </div>
-                    <Badge className="bg-emerald-100 text-emerald-700 border-0">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Active
-                    </Badge>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </CardContent>
           </Card>

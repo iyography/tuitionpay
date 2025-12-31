@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { DEMO_MODE, getActiveDemoSchools, getDemoSchool } from '@/lib/demo-data'
 import type { School } from '@/types/database'
 
 export function useSchools() {
@@ -12,15 +11,6 @@ export function useSchools() {
   useEffect(() => {
     async function fetchSchools() {
       try {
-        if (DEMO_MODE) {
-          // Use demo data
-          await new Promise(resolve => setTimeout(resolve, 500)) // Simulate loading
-          setSchools(getActiveDemoSchools() as School[])
-          setIsLoading(false)
-          return
-        }
-
-        // Real Supabase fetch
         const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
         const { data, error } = await supabase
@@ -60,15 +50,6 @@ export function useSchool(schoolId: string | null) {
     async function fetchSchool() {
       setIsLoading(true)
       try {
-        if (DEMO_MODE) {
-          // Use demo data
-          await new Promise(resolve => setTimeout(resolve, 300)) // Simulate loading
-          setSchool(getDemoSchool(id) as School)
-          setIsLoading(false)
-          return
-        }
-
-        // Real Supabase fetch
         const { createClient } = await import('@/lib/supabase/client')
         const supabase = createClient()
         const { data, error } = await supabase

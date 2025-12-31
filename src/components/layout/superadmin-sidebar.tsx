@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { DEMO_MODE } from '@/lib/demo-data'
 
 // Super admin sees everything
 const navItems = [
@@ -37,11 +36,6 @@ export function SuperAdminSidebar() {
   const [collapsed, setCollapsed] = useState(false)
 
   const handleSignOut = async () => {
-    if (DEMO_MODE) {
-      sessionStorage.removeItem('demo_superadmin')
-      router.push('/login')
-      return
-    }
     const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
     await supabase.auth.signOut()
