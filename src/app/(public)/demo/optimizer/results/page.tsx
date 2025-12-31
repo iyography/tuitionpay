@@ -1,5 +1,6 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -18,10 +19,11 @@ import {
   User,
   ExternalLink,
   Sparkles,
+  Loader2,
 } from 'lucide-react'
 import { demoCreditCards } from '@/lib/demo-data'
 
-export default function DemoResultsPage() {
+function DemoResultsContent() {
   const searchParams = useSearchParams()
   const tuition = parseInt(searchParams.get('tuition') || '15000')
   const creditScore = searchParams.get('score') || 'good'
@@ -300,6 +302,25 @@ export default function DemoResultsPage() {
         </motion.div>
       </motion.div>
     </div>
+  )
+}
+
+function LoadingFallback() {
+  return (
+    <div className="container pt-28 pb-12 md:pt-32 md:pb-20">
+      <div className="max-w-5xl mx-auto flex flex-col items-center justify-center min-h-[400px]">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Loading your recommendations...</p>
+      </div>
+    </div>
+  )
+}
+
+export default function DemoResultsPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <DemoResultsContent />
+    </Suspense>
   )
 }
 
