@@ -21,6 +21,7 @@ import {
   Banknote,
   ChevronDown,
   HelpCircle,
+  Coins,
 } from 'lucide-react'
 
 const faqData = [
@@ -820,6 +821,29 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+
+      {/* Floating Demo Button */}
+      <Link href="/demo" className="fixed bottom-6 right-6 z-50 group">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 2, type: 'spring', stiffness: 200 }}
+          className="relative"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+          <div className="relative h-16 w-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
+            <motion.div
+              animate={{ rotateY: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+            >
+              <Coins className="h-8 w-8 text-white" />
+            </motion.div>
+          </div>
+          <div className="absolute -top-12 right-0 bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            Try Full Demo
+          </div>
+        </motion.div>
+      </Link>
     </div>
   )
 }
