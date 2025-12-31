@@ -541,19 +541,15 @@ export default function HomePage() {
                   <div className="space-y-4 mb-6">
                     <div className="flex items-start gap-3">
                       <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Direct statement credits or deposits—no complexity</span>
+                      <span className="text-muted-foreground">Points redeemed for cash back after purchase</span>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Typical signup bonuses: $200-$500</span>
+                      <span className="text-muted-foreground">Signup bonuses typically $500-$2,500</span>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">1.5-2% ongoing rewards on spending</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">No points programs to learn</span>
+                      <span className="text-muted-foreground">No points program to learn</span>
                     </div>
                   </div>
 
@@ -598,19 +594,11 @@ export default function HomePage() {
                   <div className="space-y-4 mb-6">
                     <div className="flex items-start gap-3">
                       <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Points valued at 1.5-2+ cents each when redeemed for travel</span>
+                      <span className="text-muted-foreground">Points can be redeemed for travel, typically 1.5 to 3+ cents per point in value</span>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Larger signup bonuses: 60,000-100,000+ points</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Transfer partners can multiply value further</span>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                      <span className="text-muted-foreground">Premium perks: lounge access, travel credits</span>
+                      <span className="text-muted-foreground">Transfer partners vary, recommendation based on your preferences</span>
                     </div>
                   </div>
 
