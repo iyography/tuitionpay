@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const schoolApplicationSchema = z.object({
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       additionalNotes,
     } = validatedData.data
 
-    const supabase = await createClient()
+    const supabase = await createServiceClient()
 
     // Check if school already applied
     const { data: existingSchool } = await supabase
