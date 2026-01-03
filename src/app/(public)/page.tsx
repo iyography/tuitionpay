@@ -628,6 +628,9 @@ export default function HomePage() {
               <span className="font-medium text-foreground">Not a traveler?</span> Cash back is still excellent—getting 10-12% back on tuition is a significant savings.
               Our tool recommends the best option based on <span className="font-medium">your</span> preferences.
             </p>
+            <p className="text-sm text-green-600 mt-3 font-medium">
+              Best of all: credit card rewards are tax-free!
+            </p>
           </motion.div>
 
           {/* Pay in Full Note */}

@@ -2,6 +2,14 @@ import type { CreditCard } from '@/types/database'
 import type { CardRecommendationResult, CardMatchingCriteria, SavingsBreakdown } from '@/types/cards'
 import { getCreditScoreMinimum } from '@/types/cards'
 
+// Parse spend requirement from card (e.g., "Spend $4,000 in 3 months" -> 4000)
+function parseSpendRequirement(requirement: string | null): number {
+  if (!requirement) return 0
+  const match = requirement.match(/\$?([\d,]+)/)
+  if (!match) return 0
+  return parseInt(match[1].replace(/,/g, ''), 10)
+}
+
 // Calculate the savings breakdown for a specific card
 function calculateSavingsBreakdown(
   card: CreditCard,
@@ -29,28 +37,83 @@ function calculateSavingsBreakdown(
   }
 }
 
-// Check if user can likely meet the signup bonus requirement
-function canMeetSpendRequirement(
+// Check if this card should be excluded based on AMEX history
+function shouldExcludeBasedOnAmexHistory(
   card: CreditCard,
-  monthlySpendCapacity: number,
-  tuitionAmount: number
+  amexHistoryCards: string[]
 ): boolean {
-  if (!card.signup_bonus_requirement) return true
+  if (!amexHistoryCards || amexHistoryCards.length === 0) return false
+  if (amexHistoryCards.includes('None of the above')) return false
 
-  // Parse the spend requirement (e.g., "Spend $4,000 in 3 months")
-  const requirementMatch = card.signup_bonus_requirement.match(/\$?([\d,]+)/);
-  if (!requirementMatch) return true
+  const cardNameLower = card.card_name.toLowerCase()
+  const issuerLower = card.issuer.toLowerCase()
 
-  const requiredSpend = parseInt(requirementMatch[1].replace(/,/g, ''), 10)
+  // Only apply AMEX rules to AMEX cards
+  if (!issuerLower.includes('amex') && !issuerLower.includes('american express')) {
+    return false
+  }
 
-  // Assume 3 month timeframe if not specified
-  const timeframeMatch = card.signup_bonus_timeframe?.match(/(\d+)\s*month/i)
-  const months = timeframeMatch ? parseInt(timeframeMatch[1], 10) : 3
+  // Check AMEX Personal Platinum history
+  if (amexHistoryCards.includes('AMEX Personal Platinum')) {
+    // Remove both Personal Gold and Personal Platinum
+    if (
+      (cardNameLower.includes('platinum') && !cardNameLower.includes('business')) ||
+      (cardNameLower.includes('gold') && !cardNameLower.includes('business'))
+    ) {
+      return true
+    }
+  }
 
-  // Total available spend = tuition + (monthly capacity * months)
-  const totalAvailableSpend = tuitionAmount + (monthlySpendCapacity * months)
+  // Check AMEX Personal Gold history
+  if (amexHistoryCards.includes('AMEX Personal Gold')) {
+    // Remove only Personal Gold
+    if (cardNameLower.includes('gold') && !cardNameLower.includes('business')) {
+      return true
+    }
+  }
 
-  return totalAvailableSpend >= requiredSpend
+  // Check AMEX Business Platinum history
+  if (amexHistoryCards.includes('AMEX Business Platinum')) {
+    // Remove both Business Gold and Business Platinum
+    if (
+      (cardNameLower.includes('platinum') && cardNameLower.includes('business')) ||
+      (cardNameLower.includes('gold') && cardNameLower.includes('business'))
+    ) {
+      return true
+    }
+  }
+
+  // Check AMEX Business Gold history
+  if (amexHistoryCards.includes('AMEX Business Gold')) {
+    // Remove only Business Gold
+    if (cardNameLower.includes('gold') && cardNameLower.includes('business')) {
+      return true
+    }
+  }
+
+  return false
+}
+
+// Check if card matches user's current cards (case-insensitive partial match)
+function userHasCard(card: CreditCard, currentCards: string[]): boolean {
+  if (!currentCards || currentCards.length === 0) return false
+
+  const cardNameLower = card.card_name.toLowerCase()
+
+  for (const userCard of currentCards) {
+    const userCardLower = userCard.toLowerCase()
+    // Check for close match (card name contains user's card or vice versa)
+    if (
+      cardNameLower.includes(userCardLower) ||
+      userCardLower.includes(cardNameLower) ||
+      // Also check without common prefixes
+      cardNameLower.replace('chase ', '').includes(userCardLower.replace('chase ', '')) ||
+      cardNameLower.replace('amex ', '').includes(userCardLower.replace('amex ', ''))
+    ) {
+      return true
+    }
+  }
+  return false
 }
 
 // Filter cards based on criteria
@@ -58,11 +121,13 @@ function filterCards(
   cards: CreditCard[],
   criteria: CardMatchingCriteria
 ): CreditCard[] {
-  const userMinScore = getCreditScoreMinimum(criteria.creditScoreRange)
+  const userMinScore = criteria.creditScoreRange
+    ? getCreditScoreMinimum(criteria.creditScoreRange)
+    : 700 // Default to "good" credit
 
   return cards.filter(card => {
-    // Filter by credit score
-    if (card.min_credit_score && card.min_credit_score > userMinScore) {
+    // Filter by credit score if provided
+    if (criteria.creditScoreRange && card.min_credit_score && card.min_credit_score > userMinScore) {
       return false
     }
 
@@ -71,19 +136,27 @@ function filterCards(
       return false
     }
 
-    // Exclude cards user already has (case-insensitive match on issuer)
-    const userCardsLower = criteria.currentCards.map(c => c.toLowerCase())
-    if (userCardsLower.some(issuer =>
-      card.issuer.toLowerCase().includes(issuer) ||
-      issuer.includes(card.issuer.toLowerCase())
-    )) {
-      // Only exclude if it's likely the same specific card
-      // For now, we don't exclude just because they have a card from the same issuer
+    // Exclude cards user already has
+    if (userHasCard(card, criteria.currentCards)) {
+      return false
     }
 
-    // Check if spend requirement is achievable
-    if (!canMeetSpendRequirement(card, criteria.monthlySpendCapacity, criteria.tuitionAmount)) {
-      // Don't completely exclude, but it will rank lower
+    // Chase 5/24 rule: Remove ALL Chase cards if 5+ personal applications in last 24 months
+    if (criteria.recentCardApplications === '5+') {
+      if (card.issuer.toLowerCase().includes('chase')) {
+        return false
+      }
+    }
+
+    // AMEX exclusion based on history
+    if (shouldExcludeBasedOnAmexHistory(card, criteria.amexHistoryCards)) {
+      return false
+    }
+
+    // IMPORTANT: Don't recommend cards with spend requirements higher than tuition
+    const spendRequirement = parseSpendRequirement(card.signup_bonus_requirement)
+    if (spendRequirement > criteria.tuitionAmount) {
+      return false
     }
 
     return true
@@ -104,14 +177,28 @@ function scoreByPreference(
     case 'travel_points':
       if (rewardsType.includes('travel') || rewardsType.includes('points') || rewardsType.includes('miles')) return 1.2
       break
-    case 'statement_credits':
-      if (rewardsType.includes('credit') || rewardsType.includes('statement')) return 1.2
-      break
     case 'flexible':
       return 1.0 // No preference bonus
   }
 
   return 1.0
+}
+
+// Determine if a card is cash back or travel
+function getCardCategory(card: CreditCard): 'cash_back' | 'travel' {
+  const rewardsType = card.rewards_type?.toLowerCase() || ''
+  const cardName = card.card_name.toLowerCase()
+
+  if (
+    rewardsType.includes('cash') ||
+    cardName.includes('cash') ||
+    cardName.includes('quicksilver') ||
+    cardName.includes('double cash')
+  ) {
+    return 'cash_back'
+  }
+
+  return 'travel'
 }
 
 // Main recommendation function
@@ -127,26 +214,13 @@ export function calculateRecommendations(
     const breakdown = calculateSavingsBreakdown(card, criteria.tuitionAmount)
     const preferenceMultiplier = scoreByPreference(card, criteria.preferredRewardsType)
 
-    // Adjust for spend requirement achievability
-    const canMeetBonus = canMeetSpendRequirement(
-      card,
-      criteria.monthlySpendCapacity,
-      criteria.tuitionAmount
-    )
-
-    // If can't meet bonus, reduce the signup bonus value in calculation
-    const adjustedSavings = canMeetBonus
-      ? breakdown.netFirstYearValue * preferenceMultiplier
-      : (breakdown.rewardsEarned + breakdown.annualFeeImpact) * preferenceMultiplier
+    // Since we've already filtered out cards with spend > tuition, all eligible cards can meet bonus
+    const adjustedSavings = breakdown.netFirstYearValue * preferenceMultiplier
 
     return {
       card,
       estimatedSavings: Math.round(adjustedSavings * 100) / 100,
-      breakdown: canMeetBonus ? breakdown : {
-        ...breakdown,
-        signupBonusValue: 0, // Don't show bonus they can't achieve
-        netFirstYearValue: Math.round((breakdown.rewardsEarned + breakdown.annualFeeImpact) * 100) / 100,
-      },
+      breakdown,
       rank: 0, // Will be set after sorting
     }
   })
@@ -154,8 +228,28 @@ export function calculateRecommendations(
   // Step 3: Sort by estimated savings (descending)
   cardResults.sort((a, b) => b.estimatedSavings - a.estimatedSavings)
 
-  // Step 4: Assign ranks and return top 3
-  return cardResults.slice(0, 3).map((result, index) => ({
+  // Step 4: Get top recommendations with alternatives
+  const userCategory = criteria.preferredRewardsType === 'cash_back' ? 'cash_back' : 'travel'
+  const alternateCategory = userCategory === 'cash_back' ? 'travel' : 'cash_back'
+
+  // Get best cards overall
+  const topCards = cardResults.slice(0, 3)
+
+  // Find best card from the alternate category (if not already in top 3)
+  const alternateCard = cardResults.find(r => {
+    const cardCategory = getCardCategory(r.card)
+    const notInTop3 = !topCards.some(t => t.card.id === r.card.id)
+    return cardCategory === alternateCategory && notInTop3
+  })
+
+  // Combine results
+  const results = [...topCards]
+  if (alternateCard && criteria.preferredRewardsType !== 'flexible') {
+    results.push(alternateCard)
+  }
+
+  // Assign ranks
+  return results.map((result, index) => ({
     ...result,
     rank: index + 1,
   }))
@@ -171,6 +265,12 @@ export interface SplitStrategy {
   totalSavings: number
   totalTuition: number
   savingsPercentage: number
+}
+
+// Check if a card is a Chase Ink business card
+function isChaseInkCard(card: CreditCard): boolean {
+  const cardNameLower = card.card_name.toLowerCase()
+  return cardNameLower.includes('ink') && card.issuer.toLowerCase().includes('chase')
 }
 
 export function calculateSplitStrategies(
@@ -197,15 +297,18 @@ export function calculateSplitStrategies(
       const card1 = eligibleCards[i]
       const card2 = eligibleCards[j]
 
+      // CHASE INK RULE: Can only have one Chase Ink card in multi-card strategy
+      if (isChaseInkCard(card1) && isChaseInkCard(card2)) {
+        continue // Skip this combination
+      }
+
       // Get spend requirements for each card
       const req1 = parseSpendRequirement(card1.signup_bonus_requirement)
       const req2 = parseSpendRequirement(card2.signup_bonus_requirement)
 
-      // Check if combined requirements can be met with tuition + monthly spend
-      const timeframe = 3 // months
-      const totalAvailableSpend = tuitionAmount + (criteria.monthlySpendCapacity * timeframe)
-
-      if (req1 + req2 > totalAvailableSpend) continue
+      // Both cards must have spend requirements <= tuition to be valid
+      // (already filtered, but double-check combined)
+      if (req1 + req2 > tuitionAmount * 1.5) continue // Allow some flexibility for split
 
       // Allocate tuition between cards (try to meet both bonuses)
       let allocation1 = Math.min(req1, tuitionAmount)
@@ -220,13 +323,13 @@ export function calculateSplitStrategies(
         allocation2 += transfer
       }
 
+      // Check if allocations meet requirements
+      const canMeet1 = allocation1 >= req1
+      const canMeet2 = allocation2 >= req2
+
       // Calculate savings for this split
       const breakdown1 = calculateSavingsBreakdown(card1, allocation1)
       const breakdown2 = calculateSavingsBreakdown(card2, allocation2)
-
-      // Only count signup bonus if we can meet the requirement
-      const canMeet1 = allocation1 + (criteria.monthlySpendCapacity * timeframe) >= req1
-      const canMeet2 = allocation2 + (criteria.monthlySpendCapacity * timeframe) >= req2
 
       const totalSavings =
         (canMeet1 ? breakdown1.signupBonusValue : 0) +
@@ -261,13 +364,6 @@ export function calculateSplitStrategies(
 
   strategies.sort((a, b) => b.totalSavings - a.totalSavings)
   return strategies[0]
-}
-
-function parseSpendRequirement(requirement: string | null): number {
-  if (!requirement) return 0
-  const match = requirement.match(/\$?([\d,]+)/)
-  if (!match) return 0
-  return parseInt(match[1].replace(/,/g, ''), 10)
 }
 
 // Format currency for display

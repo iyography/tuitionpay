@@ -471,7 +471,7 @@ export default function ResultsPage() {
           </Card>
         </motion.div>
 
-        {/* Spouse/Partner Reminder */}
+        {/* Two Parents Reminder */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -481,9 +481,7 @@ export default function ResultsPage() {
           <Alert className="bg-blue-50 border-blue-200">
             <Users className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800">
-              <strong>Have a spouse or partner?</strong> They should fill out this survey separately!
-              Each person in your household can earn their own signup bonuses, potentially doubling
-              your family&apos;s rewards. Have them visit{' '}
+              <strong>Two Parents?</strong> Each parent can fill out this survey separately to see which parent has access to the best credit card sign up offers! Have them visit{' '}
               <Link href="/optimizer" className="underline font-medium">
                 TuitionPay.ai/optimizer
               </Link>{' '}

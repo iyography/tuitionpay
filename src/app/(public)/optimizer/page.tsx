@@ -31,10 +31,13 @@ export default function OptimizerPage() {
           <h1 className="text-3xl md:text-4xl font-bold mb-4">
             Find the Best Credit Card for Your Tuition
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-6">
             Maximize your rewards by paying tuition with the right credit card.
-            <strong className="block mt-2 text-foreground">Pay in full to get the discount!</strong>
           </p>
+          <Button size="lg" onClick={handleStart} className="gap-2 text-lg px-8 py-6">
+            Start Assessment
+            <ArrowRight className="h-5 w-5" />
+          </Button>
         </div>
 
         {/* Two Simple Steps */}
@@ -76,7 +79,7 @@ export default function OptimizerPage() {
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-center mb-2">Cash Back vs Travel Rewards</h2>
           <p className="text-center text-muted-foreground mb-8">
-            Understanding your options helps you choose the best card
+            Our 10-12% estimate is based on cash back. But travel rewards can be worth <span className="font-semibold text-primary">2-3x more</span>.
           </p>
           <div className="grid md:grid-cols-2 gap-6">
             {/* Cash Back Card */}
@@ -86,73 +89,81 @@ export default function OptimizerPage() {
                   <div className="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
                     <Banknote className="h-6 w-6 text-emerald-600" />
                   </div>
-                  <CardTitle className="text-xl">Cash Back</CardTitle>
+                  <div>
+                    <CardTitle className="text-xl">Cash Back</CardTitle>
+                    <p className="text-emerald-600 font-medium text-sm">Simple & Straightforward</p>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-muted-foreground">
-                  Get money back directly on your purchases. Simple, straightforward, and deposited into your account.
-                </p>
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Typically 1.5-2% back on all purchases</span>
+                    <span className="text-sm">Points redeemed for cash back after purchase</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Easy to understand - no complicated redemption</span>
+                    <span className="text-sm">Signup bonuses typically $500-$2,500</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Best for: People who want simplicity</span>
+                    <span className="text-sm">No points program to learn</span>
                   </li>
                 </ul>
-                <div className="pt-4 border-t">
-                  <div className="flex items-center gap-2 text-emerald-600">
-                    <DollarSign className="h-5 w-5" />
-                    <span className="font-medium">Example: $10,000 tuition = $150-200 cash back</span>
+                <div className="bg-emerald-100 rounded-xl p-4">
+                  <div className="text-sm text-emerald-800 font-medium mb-1">On $30,000 tuition</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-emerald-700">$3,000-$3,600</span>
+                    <span className="text-emerald-600 text-sm">savings</span>
                   </div>
+                  <div className="text-xs text-emerald-600 mt-1">10-12% effective return</div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Travel Rewards Card */}
-            <Card className="border-2 hover:border-blue-500 transition-colors">
+            <Card className="border-2 border-blue-200 hover:border-blue-500 transition-colors relative">
+              <div className="absolute top-4 right-4">
+                <div className="flex items-center gap-1 bg-blue-600 text-white px-2 py-0.5 rounded-full text-xs font-semibold">
+                  Higher Value
+                </div>
+              </div>
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
                     <Plane className="h-6 w-6 text-blue-600" />
                   </div>
-                  <CardTitle className="text-xl">Travel Rewards</CardTitle>
+                  <div>
+                    <CardTitle className="text-xl">Travel Rewards</CardTitle>
+                    <p className="text-blue-600 font-medium text-sm">Worth 2-3x More</p>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <p className="text-muted-foreground">
-                  Earn points or miles redeemable for flights, hotels, and more. Higher value potential but requires strategy.
-                </p>
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Points worth 1.5-2.3 cents when transferred to partners</span>
+                    <span className="text-sm">Points redeemable for travel at 1.5-3+ cents per point</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Huge signup bonuses (often 50,000-100,000 points)</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm">Best for: Travelers who want maximum value</span>
+                    <span className="text-sm">Transfer partners vary, recommendations based on your preferences</span>
                   </li>
                 </ul>
-                <div className="pt-4 border-t">
-                  <div className="flex items-center gap-2 text-blue-600">
-                    <Gift className="h-5 w-5" />
-                    <span className="font-medium">Example: 75K points = $1,500+ in travel value</span>
+                <div className="bg-blue-100 rounded-xl p-4">
+                  <div className="text-sm text-blue-800 font-medium mb-1">On $30,000 tuition</div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-bold text-blue-700">$6,000-$9,000+</span>
+                    <span className="text-blue-600 text-sm">in travel value</span>
                   </div>
+                  <div className="text-xs text-blue-600 mt-1">20-30%+ effective return</div>
                 </div>
               </CardContent>
             </Card>
           </div>
+          <p className="text-center text-sm text-green-600 mt-4 font-medium">
+            Best of all: credit card rewards are tax-free!
+          </p>
         </div>
 
         {/* Important Note */}
@@ -162,7 +173,7 @@ export default function OptimizerPage() {
             <div>
               <h3 className="font-semibold text-amber-800 mb-2">Maximize Your Discount</h3>
               <p className="text-amber-700">
-                To get the full discount, <strong>pay your tuition in full</strong> with your new credit card and pay off the card balance before the due date. This way you earn maximum rewards and pay no interest!
+                To get the full discount, pay your tuition within your new credit card&apos;s signup bonus window and pay off the card balance before the due date. This way you earn maximum rewards and pay no interest!
               </p>
             </div>
           </div>

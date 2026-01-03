@@ -12,14 +12,16 @@ const defaultAssessment: AssessmentData = {
   studentIdentifier: '',
   parentEmail: '',
   tuitionAmount: 0,
-  creditScoreRange: 'good',
   recentCardApplications: '0',
+  amexHistoryCards: [],
   currentCards: [],
-  monthlySpendCapacity: 0,
   preferredRewardsType: 'flexible',
   preferredAirlines: [],
   preferredHotels: [],
   openToBusinessCards: false,
+  // Legacy fields
+  creditScoreRange: 'good',
+  monthlySpendCapacity: 0,
 }
 
 export function useAssessment() {

@@ -31,6 +31,8 @@ export async function POST(request: NextRequest) {
       monthlySpendCapacity,
       preferredRewardsType,
       openToBusinessCards,
+      recentCardApplications,
+      amexHistoryCards,
     } = body
 
     const supabase = await createClient()
@@ -64,6 +66,8 @@ export async function POST(request: NextRequest) {
       preferredRewardsType,
       openToBusinessCards,
       tuitionAmount,
+      recentCardApplications: recentCardApplications || '0',
+      amexHistoryCards: amexHistoryCards || [],
     }
 
     // Calculate recommendations

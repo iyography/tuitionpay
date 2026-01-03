@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { REWARDS_PREFERENCES, AIRLINE_PARTNERS, HOTEL_PARTNERS, type RewardsPreference } from '@/types/assessment'
 import type { AssessmentData } from '@/types/assessment'
 import { cn } from '@/lib/utils'
-import { Banknote, Plane, CreditCard, Shuffle, Building2 } from 'lucide-react'
+import { Banknote, Plane, Shuffle, Building2 } from 'lucide-react'
 
 interface StepRewardsTypeProps {
   data: AssessmentData
@@ -18,14 +18,12 @@ interface StepRewardsTypeProps {
 const REWARD_ICONS = {
   cash_back: Banknote,
   travel_points: Plane,
-  statement_credits: CreditCard,
   flexible: Shuffle,
 }
 
 const REWARD_DESCRIPTIONS = {
   cash_back: 'Get money back on purchases, deposited to your account',
   travel_points: 'Earn points/miles redeemable for flights, hotels, and travel',
-  statement_credits: 'Reduce your card balance with automatic credits',
   flexible: 'Show me all options - I want to compare everything',
 }
 

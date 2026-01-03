@@ -15,12 +15,14 @@ export interface SavingsBreakdown {
 }
 
 export interface CardMatchingCriteria {
-  creditScoreRange: string
-  currentCards: string[]
-  monthlySpendCapacity: number
+  creditScoreRange?: string
+  currentCards: string[] // Now stores specific card names
+  monthlySpendCapacity?: number
   preferredRewardsType: string
   openToBusinessCards: boolean
   tuitionAmount: number
+  recentCardApplications: string // '0', '1-2', '3-4', '5+'
+  amexHistoryCards: string[] // Which AMEX cards user has had
 }
 
 export function getCreditScoreMinimum(range: string): number {
