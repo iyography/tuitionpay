@@ -55,6 +55,17 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Protect parent routes
+  if (request.nextUrl.pathname.startsWith('/parent')) {
+    if (!user) {
+      // Redirect to home page with auth modal trigger
+      const homeUrl = new URL('/', request.url)
+      homeUrl.searchParams.set('auth', 'parent')
+      homeUrl.searchParams.set('redirect', request.nextUrl.pathname)
+      return NextResponse.redirect(homeUrl)
+    }
+  }
+
   // Redirect logged-in users away from login page
   if (request.nextUrl.pathname === '/login' && user) {
     return NextResponse.redirect(new URL('/admin', request.url))

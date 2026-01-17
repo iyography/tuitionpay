@@ -2,6 +2,9 @@ import type { HelcimCheckoutSession } from './types'
 
 const HELCIM_API_URL = 'https://api.helcim.com/v2'
 
+// Check if we should use mock mode
+const USE_MOCK = !process.env.HELCIM_API_TOKEN
+
 interface CreateCheckoutParams {
   amount: number
   currency?: string
@@ -14,17 +17,33 @@ interface CreateCheckoutParams {
 }
 
 /**
+ * Generate mock checkout session for development/demo
+ */
+function createMockCheckoutSession(): HelcimCheckoutSession {
+  const timestamp = Date.now()
+  return {
+    checkoutToken: `mock-checkout-${timestamp}-${Math.random().toString(36).substring(2, 10)}`,
+    secretToken: `mock-secret-${timestamp}-${Math.random().toString(36).substring(2, 10)}`,
+  }
+}
+
+/**
  * Create a HelcimPay.js checkout session
  * This generates a secure token for client-side payment collection
+ * Falls back to mock mode if HELCIM_API_TOKEN is not configured
  */
 export async function createCheckoutSession(
   params: CreateCheckoutParams
 ): Promise<HelcimCheckoutSession> {
-  const apiToken = process.env.HELCIM_API_TOKEN
-
-  if (!apiToken) {
-    throw new Error('HELCIM_API_TOKEN is not configured')
+  // Use mock mode in development or when API token is not set
+  if (USE_MOCK) {
+    console.log('Helcim: Using mock checkout session (API token not configured)')
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500))
+    return createMockCheckoutSession()
   }
+
+  const apiToken = process.env.HELCIM_API_TOKEN!
 
   const response = await fetch(`${HELCIM_API_URL}/helcim-pay/initialize`, {
     method: 'POST',
@@ -62,19 +81,34 @@ export async function createCheckoutSession(
 
 /**
  * Verify a completed payment transaction
+ * Falls back to mock verification if HELCIM_API_TOKEN is not configured
  */
-export async function verifyTransaction(transactionId: string): Promise<{
+export async function verifyTransaction(transactionId: string, amount?: number): Promise<{
   status: 'approved' | 'declined' | 'error'
   amount: number
   cardLastFour: string
   cardType: string
   approvalCode?: string
 }> {
-  const apiToken = process.env.HELCIM_API_TOKEN
+  // Use mock mode in development or when API token is not set
+  if (USE_MOCK) {
+    console.log('Helcim: Using mock transaction verification')
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500))
 
-  if (!apiToken) {
-    throw new Error('HELCIM_API_TOKEN is not configured')
+    // Simulate 95% success rate in mock mode
+    const isApproved = Math.random() > 0.05
+
+    return {
+      status: isApproved ? 'approved' : 'declined',
+      amount: amount || 0,
+      cardLastFour: '4242',
+      cardType: 'Visa',
+      approvalCode: isApproved ? `APR${Math.random().toString(36).substring(2, 8).toUpperCase()}` : undefined,
+    }
   }
+
+  const apiToken = process.env.HELCIM_API_TOKEN!
 
   const response = await fetch(`${HELCIM_API_URL}/card-transactions/${transactionId}`, {
     method: 'GET',

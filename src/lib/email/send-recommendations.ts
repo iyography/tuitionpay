@@ -71,7 +71,7 @@ export async function sendRecommendationEmail(params: RecommendationEmailParams)
         </div>
         <div style="text-align: right;">
           <div style="font-size: 24px; font-weight: 700; color: #059669;">$${card.estimatedSavings.toLocaleString()}</div>
-          <div style="font-size: 12px; color: #6b7280;">estimated savings</div>
+          <div style="font-size: 12px; color: #6b7280;">est. savings*</div>
         </div>
       </div>
 
@@ -148,8 +148,9 @@ export async function sendRecommendationEmail(params: RecommendationEmailParams)
               <!-- Summary -->
               <div style="background: #059669; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 24px;">
                 <p style="margin: 0 0 4px 0; opacity: 0.9;">On your $${tuitionAmount.toLocaleString()} tuition payment</p>
-                <p style="margin: 0; font-size: 36px; font-weight: 700;">$${topCard.estimatedSavings.toLocaleString()} in savings</p>
+                <p style="margin: 0; font-size: 36px; font-weight: 700;">$${topCard.estimatedSavings.toLocaleString()} in savings*</p>
                 <p style="margin: 4px 0 0 0; opacity: 0.9;">${Math.round((topCard.estimatedSavings / tuitionAmount) * 100)}% effective return</p>
+                <p style="margin: 8px 0 0 0; font-size: 11px; opacity: 0.8;">*Estimated value after 3% processing fee. Actual savings may vary.</p>
               </div>
 
               <!-- IMPORTANT: Pay in Full Warning -->

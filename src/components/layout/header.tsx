@@ -2,22 +2,36 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { CreditCard, DollarSign, Menu, X } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { CreditCard, DollarSign, Menu, X, User, LogOut } from 'lucide-react'
+import { useState, useEffect, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { ParentAuthModal } from '@/components/auth/parent-auth-modal'
+import { createClient } from '@/lib/supabase/client'
+import type { User as SupabaseUser } from '@supabase/supabase-js'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const navItems = [
   { href: '/optimizer', label: 'See Your Savings', icon: CreditCard },
   { href: '/pay', label: 'Pay Your Tuition', icon: DollarSign },
 ]
 
-export function Header() {
+function HeaderContent() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [authModalOpen, setAuthModalOpen] = useState(false)
+  const [user, setUser] = useState<SupabaseUser | null>(null)
+  const [parentName, setParentName] = useState<string | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -27,8 +41,54 @@ export function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Don't show header on admin pages
-  if (pathname?.startsWith('/admin') || pathname === '/login') {
+  // Check for auth query param to auto-open modal
+  useEffect(() => {
+    if (searchParams?.get('auth') === 'parent') {
+      setAuthModalOpen(true)
+    }
+  }, [searchParams])
+
+  // Check auth state and fetch parent info
+  useEffect(() => {
+    const supabase = createClient()
+
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+
+      if (user) {
+        // Fetch parent name
+        const { data: parent } = await supabase
+          .from('parents')
+          .select('full_name')
+          .eq('id', user.id)
+          .single()
+
+        setParentName(parent?.full_name || null)
+      }
+    }
+
+    fetchUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null)
+      if (!session?.user) {
+        setParentName(null)
+      }
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleSignOut = async () => {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    setUser(null)
+    setParentName(null)
+  }
+
+  // Don't show header on admin or parent pages
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/parent') || pathname === '/login') {
     return null
   }
 
@@ -74,6 +134,40 @@ export function Header() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-3">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="rounded-full">
+                    <User className="h-4 w-4 mr-2" />
+                    {parentName || user.email?.split('@')[0] || 'Account'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link href="/parent">Parent Portal</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/parent/payments">Payment History</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/parent/settings">Settings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="outline"
+                className="rounded-full"
+                onClick={() => setAuthModalOpen(true)}
+              >
+                Parent Sign In
+              </Button>
+            )}
             <Button className="rounded-full bg-black text-white hover:bg-gray-800" asChild>
               <Link href="/login">School Login</Link>
             </Button>
@@ -131,6 +225,38 @@ export function Header() {
                 </motion.div>
               ))}
               <div className="flex flex-col space-y-3 pt-4 border-t mt-2">
+                {user ? (
+                  <>
+                    <Button variant="outline" className="w-full rounded-xl h-12" asChild>
+                      <Link href="/parent" onClick={() => setMobileMenuOpen(false)}>
+                        <User className="h-4 w-4 mr-2" />
+                        Parent Portal
+                      </Link>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      className="w-full rounded-xl h-12"
+                      onClick={() => {
+                        handleSignOut()
+                        setMobileMenuOpen(false)
+                      }}
+                    >
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="w-full rounded-xl h-12"
+                    onClick={() => {
+                      setAuthModalOpen(true)
+                      setMobileMenuOpen(false)
+                    }}
+                  >
+                    Parent Sign In
+                  </Button>
+                )}
                 <Button variant="outline" className="w-full rounded-xl h-12" asChild>
                   <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                     School Login
@@ -146,6 +272,21 @@ export function Header() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Parent Auth Modal */}
+      <ParentAuthModal
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        redirectTo={searchParams?.get('redirect') || '/parent'}
+      />
     </motion.header>
+  )
+}
+
+export function Header() {
+  return (
+    <Suspense fallback={null}>
+      <HeaderContent />
+    </Suspense>
   )
 }

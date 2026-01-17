@@ -144,7 +144,7 @@ export default function ResultsPage() {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <p className="text-primary-foreground/80 text-sm">Estimated First-Year Savings</p>
+                  <p className="text-primary-foreground/80 text-sm">Estimated First-Year Savings*</p>
                   <p className="text-4xl font-bold">
                     {formatCurrency(totalPotentialSavings)}
                   </p>
@@ -153,6 +153,9 @@ export default function ResultsPage() {
                   <p>That&apos;s {Math.round((totalPotentialSavings / data.tuitionAmount) * 100)}% back on tuition</p>
                 </div>
               </div>
+              <p className="text-xs text-primary-foreground/70 mt-4 pt-4 border-t border-primary-foreground/20">
+                *Estimated values shown are calculated after the 3% payment processing fee. Actual savings may vary slightly based on specific card terms and offers.
+              </p>
             </CardContent>
           </Card>
         </motion.div>
@@ -361,7 +364,7 @@ export default function ResultsPage() {
                     <div className="text-center p-3 bg-primary/10 rounded-lg">
                       <Calculator className="h-5 w-5 mx-auto mb-1 text-primary" />
                       <p className="text-lg font-bold text-primary">{formatCurrency(rec.estimatedSavings)}</p>
-                      <p className="text-xs text-muted-foreground">Your Savings</p>
+                      <p className="text-xs text-muted-foreground">Est. Savings*</p>
                     </div>
                   </div>
 

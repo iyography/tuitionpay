@@ -74,6 +74,23 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient()
 
+    // Check if user is authenticated (parent)
+    const { data: { user } } = await supabase.auth.getUser()
+    let parentId: string | null = null
+
+    if (user) {
+      // Verify this user is a parent
+      const { data: parent } = await supabase
+        .from('parents')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+
+      if (parent) {
+        parentId = parent.id
+      }
+    }
+
     // Get school info
     const { data: school, error: schoolError } = await supabase
       .from('schools')
@@ -132,12 +149,36 @@ export async function POST(request: NextRequest) {
       studentId = newStudent.id
     }
 
+    // Auto-link student to parent if authenticated
+    if (parentId && studentId) {
+      // Check if link already exists
+      const { data: existingLink } = await supabase
+        .from('parent_students')
+        .select('id')
+        .eq('parent_id', parentId)
+        .eq('student_id', studentId)
+        .single()
+
+      if (!existingLink) {
+        // Create the link
+        await supabase
+          .from('parent_students')
+          .insert({
+            parent_id: parentId,
+            student_id: studentId,
+            relationship: 'parent',
+            is_primary: true,
+          })
+      }
+    }
+
     // Create pending payment record
     const { data: payment, error: paymentError } = await supabase
       .from('payments')
       .insert({
         school_id: schoolId,
         student_id: studentId,
+        parent_id: parentId,
         amount,
         processing_fee: processingFee,
         revenue_share_amount: revenueShare,

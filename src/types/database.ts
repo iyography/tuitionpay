@@ -80,6 +80,7 @@ export interface Database {
           id: string
           school_id: string
           student_id: string
+          parent_id: string | null
           amount: number
           helcim_transaction_id: string | null
           card_last_four: string | null
@@ -93,6 +94,7 @@ export interface Database {
           id?: string
           school_id: string
           student_id: string
+          parent_id?: string | null
           amount: number
           helcim_transaction_id?: string | null
           card_last_four?: string | null
@@ -106,6 +108,7 @@ export interface Database {
           id?: string
           school_id?: string
           student_id?: string
+          parent_id?: string | null
           amount?: number
           helcim_transaction_id?: string | null
           card_last_four?: string | null
@@ -389,6 +392,63 @@ export interface Database {
         }
         Relationships: []
       }
+      parents: {
+        Row: {
+          id: string
+          email: string
+          full_name: string | null
+          phone: string | null
+          email_notifications_enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          full_name?: string | null
+          phone?: string | null
+          email_notifications_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          full_name?: string | null
+          phone?: string | null
+          email_notifications_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      parent_students: {
+        Row: {
+          id: string
+          parent_id: string
+          student_id: string
+          relationship: string
+          is_primary: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          parent_id: string
+          student_id: string
+          relationship?: string
+          is_primary?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          parent_id?: string
+          student_id?: string
+          relationship?: string
+          is_primary?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -413,3 +473,5 @@ export type AssessmentResponse = Database['public']['Tables']['assessment_respon
 export type CardRecommendation = Database['public']['Tables']['card_recommendations']['Row']
 export type SchoolAdmin = Database['public']['Tables']['school_admins']['Row']
 export type SchoolApplication = Database['public']['Tables']['school_applications']['Row']
+export type Parent = Database['public']['Tables']['parents']['Row']
+export type ParentStudent = Database['public']['Tables']['parent_students']['Row']

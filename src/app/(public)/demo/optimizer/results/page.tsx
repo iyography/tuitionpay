@@ -132,10 +132,13 @@ function DemoResultsContent() {
         >
           <Card className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white border-0">
             <CardContent className="p-8 text-center">
-              <p className="text-emerald-100 mb-2">Total Potential Savings with Top 3 Cards</p>
+              <p className="text-emerald-100 mb-2">Total Potential Savings with Top 3 Cards*</p>
               <p className="text-5xl font-bold mb-2">{formatCurrency(totalPotentialSavings)}</p>
               <p className="text-emerald-100">
                 That's <span className="font-semibold text-white">{savingsPercentage}%</span> of your tuition back!
+              </p>
+              <p className="text-xs text-emerald-200 mt-4 pt-4 border-t border-emerald-400/30">
+                *Estimated values shown are calculated after the 3% payment processing fee. Actual savings may vary.
               </p>
             </CardContent>
           </Card>
@@ -180,7 +183,7 @@ function DemoResultsContent() {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="bg-emerald-50 rounded-lg p-4 text-center">
-                      <p className="text-sm text-emerald-600 mb-1">Estimated Value</p>
+                      <p className="text-sm text-emerald-600 mb-1">Est. Value*</p>
                       <p className="text-2xl font-bold text-emerald-700">
                         {formatCurrency(card.estimatedValue)}
                       </p>

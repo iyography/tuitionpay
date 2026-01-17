@@ -214,5 +214,75 @@ VALUES (
   '{"street": "123 Faith Street", "city": "Chicago", "state": "IL", "zip": "60601"}'
 ) ON CONFLICT (id) DO NOTHING;
 
+-- 12. PARENTS TABLE (links to Supabase Auth)
+CREATE TABLE IF NOT EXISTS parents (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  email TEXT NOT NULL UNIQUE,
+  full_name TEXT,
+  phone TEXT,
+  email_notifications_enabled BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. PARENT_STUDENTS TABLE (many-to-many link)
+CREATE TABLE IF NOT EXISTS parent_students (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  parent_id UUID REFERENCES parents(id) ON DELETE CASCADE,
+  student_id UUID REFERENCES students(id) ON DELETE CASCADE,
+  relationship TEXT DEFAULT 'parent',
+  is_primary BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(parent_id, student_id)
+);
+
+-- 14. ADD parent_id TO PAYMENTS TABLE
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS parent_id UUID REFERENCES parents(id);
+
+-- 15. INDEXES FOR PARENT TABLES
+CREATE INDEX IF NOT EXISTS idx_parents_email ON parents(email);
+CREATE INDEX IF NOT EXISTS idx_parent_students_parent_id ON parent_students(parent_id);
+CREATE INDEX IF NOT EXISTS idx_parent_students_student_id ON parent_students(student_id);
+CREATE INDEX IF NOT EXISTS idx_payments_parent_id ON payments(parent_id);
+
+-- 16. ENABLE RLS ON PARENT TABLES
+ALTER TABLE parents ENABLE ROW LEVEL SECURITY;
+ALTER TABLE parent_students ENABLE ROW LEVEL SECURITY;
+
+-- 17. RLS POLICIES FOR PARENTS
+-- Parents can view their own record
+CREATE POLICY "Parents can view own record" ON parents
+  FOR SELECT USING (id = auth.uid());
+
+-- Parents can update their own record
+CREATE POLICY "Parents can update own record" ON parents
+  FOR UPDATE USING (id = auth.uid());
+
+-- Parents can insert their own record (during signup)
+CREATE POLICY "Parents can insert own record" ON parents
+  FOR INSERT WITH CHECK (id = auth.uid());
+
+-- Parents can view their linked students
+CREATE POLICY "Parents can view linked students" ON parent_students
+  FOR SELECT USING (parent_id = auth.uid());
+
+-- Parents can insert new student links
+CREATE POLICY "Parents can link students" ON parent_students
+  FOR INSERT WITH CHECK (parent_id = auth.uid());
+
+-- Parents can delete their own student links
+CREATE POLICY "Parents can unlink students" ON parent_students
+  FOR DELETE USING (parent_id = auth.uid());
+
+-- Parents can view students they are linked to
+CREATE POLICY "Parents can view their students" ON students
+  FOR SELECT USING (
+    id IN (SELECT student_id FROM parent_students WHERE parent_id = auth.uid())
+  );
+
+-- Parents can view their own payments
+CREATE POLICY "Parents can view own payments" ON payments
+  FOR SELECT USING (parent_id = auth.uid());
+
 -- Success message
 SELECT 'TuitionPay database setup complete!' as message;
