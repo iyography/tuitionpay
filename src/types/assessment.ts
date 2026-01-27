@@ -73,9 +73,9 @@ export interface AssessmentData {
   schoolId: string
   schoolName: string
 
-  // Step 2: Student Info
-  studentName: string
-  studentIdentifier?: string
+  // Step 2: Parent Info
+  studentName: string // Now used for parent's full name (kept field name for backward compat)
+  studentIdentifier?: string // Removed from form but kept for backward compat
   parentEmail: string
 
   // Step 3: Tuition Amount

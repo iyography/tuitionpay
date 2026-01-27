@@ -231,6 +231,34 @@ export default function PartnerPage() {
         </div>
       </section>
 
+      {/* Fee Messaging Callout (I) */}
+      <section className="py-8">
+        <div className="container mx-auto px-6">
+          <div className="max-w-3xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <DollarSign className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-emerald-900 mb-2">Zero Cost to Your School</h3>
+                    <p className="text-emerald-800 text-sm leading-relaxed">
+                      Processing fees are absorbed by parents — who still save 10-12% after fees. Your school receives the{' '}
+                      <strong>full tuition amount</strong> plus a revenue share on processing fees. Zero cost, zero risk to your school.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Application Form */}
       <section className="py-16">
         <div className="container mx-auto px-6">

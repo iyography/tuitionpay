@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
       openToBusinessCards,
       recentCardApplications,
       amexHistoryCards,
+      preferredAirlines,
+      preferredHotels,
     } = body
 
     const supabase = await createClient()
@@ -68,6 +70,8 @@ export async function POST(request: NextRequest) {
       tuitionAmount,
       recentCardApplications: recentCardApplications || '0',
       amexHistoryCards: amexHistoryCards || [],
+      preferredAirlines: preferredAirlines || [],
+      preferredHotels: preferredHotels || [],
     }
 
     // Calculate recommendations
@@ -134,6 +138,8 @@ export async function POST(request: NextRequest) {
           estimatedSavings: rec.estimatedSavings,
           benefits: rec.card.benefits,
           isBusinessCard: rec.card.is_business_card,
+          rewardsType: rec.card.rewards_type,
+          processingFee: rec.breakdown.processingFee,
         }))
 
         const emailSplitStrategy = splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)

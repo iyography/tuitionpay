@@ -34,10 +34,10 @@ export function StepStudent({ data, updateData, setCanProceed }: StepStudentProp
       </Alert>
 
       <div className="space-y-2">
-        <Label htmlFor="studentName">Student&apos;s Full Name *</Label>
+        <Label htmlFor="studentName">Your Full Name *</Label>
         <Input
           id="studentName"
-          placeholder="Enter student's name"
+          placeholder="Enter your name"
           value={data.studentName}
           onChange={(e) => updateData({ studentName: e.target.value })}
           className="h-12"
@@ -56,22 +56,6 @@ export function StepStudent({ data, updateData, setCanProceed }: StepStudentProp
         />
         <p className="text-xs text-muted-foreground">
           We&apos;ll send your personalized card recommendations to this email.
-        </p>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="studentId">
-          Student ID <span className="text-muted-foreground">(optional)</span>
-        </Label>
-        <Input
-          id="studentId"
-          placeholder="e.g., 12345 or leave blank"
-          value={data.studentIdentifier || ''}
-          onChange={(e) => updateData({ studentIdentifier: e.target.value })}
-          className="h-12"
-        />
-        <p className="text-xs text-muted-foreground">
-          If your school provided a student ID or account number, enter it here.
         </p>
       </div>
     </div>

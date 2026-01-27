@@ -22,6 +22,9 @@ import {
   ChevronDown,
   HelpCircle,
   Coins,
+  Users2,
+  Building2,
+  Timer,
 } from 'lucide-react'
 
 const faqData = [
@@ -39,7 +42,11 @@ const faqData = [
   },
   {
     question: 'Are there any fees for using TuitionPay?',
-    answer: 'There\'s a standard credit card processing fee (around 3%) that applies to all credit card tuition payments. However, the rewards you earn (10-30%+ back) far exceed this fee. Schools receive 100% of the tuition amount - the fee comes from the payment processing side, not from what you pay.',
+    answer: 'Parents pay a standard 3% credit card processing fee — the same fee charged anywhere you use a card. Even after fees, parents save 10-12% through optimized credit card rewards.',
+  },
+  {
+    question: 'What if my card application is declined?',
+    answer: 'You can apply for a different recommended card, or pay by ACH through your school\'s normal tuition platform.',
   },
   {
     question: 'How long does it take for payments to reach the school?',
@@ -245,13 +252,13 @@ export default function HomePage() {
                 className="flex flex-col sm:flex-row gap-5 justify-center items-center"
               >
                 <Button size="lg" className="h-16 px-10 text-lg gap-3 rounded-full shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 font-semibold" asChild>
-                  <Link href="/optimizer">
-                    Find Your Best Card
+                  <Link href="/optimizer/1">
+                    See My Savings
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
                 <Button size="lg" variant="outline" className="h-16 px-10 text-lg rounded-full bg-white/60 backdrop-blur-sm border-2 border-primary/30 hover:bg-white/80 hover:border-primary/50 transition-all duration-300 font-semibold" asChild>
-                  <Link href="/pay">Pay Your Tuition Now</Link>
+                  <Link href="/pay">Pay Tuition Now</Link>
                 </Button>
               </motion.div>
 
@@ -497,6 +504,102 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* How Your Money Moves - Flow Diagram (A) */}
+      <section className="py-20 md:py-28 bg-gradient-to-b from-muted/20 to-background relative">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">How Your Money Moves</h2>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="max-w-4xl mx-auto"
+          >
+            {/* Flow Diagram */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 mb-10">
+              {/* Parent Node */}
+              <div className="flex flex-col items-center">
+                <Card className="border-2 border-primary/30 shadow-lg bg-white px-6 py-4 text-center">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Users2 className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-lg">Parent</p>
+                      <p className="text-sm text-muted-foreground">Pays with credit card</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Arrow 1 */}
+              <div className="flex flex-col items-center mx-2">
+                <ArrowRight className="h-6 w-6 text-primary hidden md:block" />
+                <ChevronDown className="h-6 w-6 text-primary md:hidden" />
+                <div className="flex items-center gap-1 mt-1">
+                  <Timer className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground font-medium">Instant</span>
+                </div>
+              </div>
+
+              {/* Payment Processor Node */}
+              <div className="flex flex-col items-center">
+                <Card className="border-2 border-amber-300 shadow-lg bg-gradient-to-br from-amber-50 to-white px-6 py-4 text-center">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                      <Shield className="h-6 w-6 text-amber-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-lg">Payment Processor</p>
+                      <p className="text-sm text-muted-foreground">Powered by Helcim</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Arrow 2 */}
+              <div className="flex flex-col items-center mx-2">
+                <ArrowRight className="h-6 w-6 text-primary hidden md:block" />
+                <ChevronDown className="h-6 w-6 text-primary md:hidden" />
+                <div className="flex items-center gap-1 mt-1">
+                  <Timer className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground font-medium">1-2 Business Days</span>
+                </div>
+              </div>
+
+              {/* School Node */}
+              <div className="flex flex-col items-center">
+                <Card className="border-2 border-emerald-300 shadow-lg bg-gradient-to-br from-emerald-50 to-white px-6 py-4 text-center">
+                  <div className="flex items-center gap-3">
+                    <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
+                      <Building2 className="h-6 w-6 text-emerald-600" />
+                    </div>
+                    <div className="text-left">
+                      <p className="font-semibold text-lg">School</p>
+                      <p className="text-sm text-muted-foreground">Receives full tuition</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Caption */}
+            <p className="text-center text-muted-foreground max-w-2xl mx-auto">
+              No hidden fees. Parents pay a standard 3% processing fee and still save 10-12% through card rewards.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Rewards Comparison Section */}
       <section className="py-24 md:py-32 bg-gradient-to-b from-background to-primary/5 relative overflow-hidden">
         {/* Decorative Background */}
@@ -710,6 +813,45 @@ export default function HomePage() {
               ))}
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Trust Bar (C) */}
+      <section className="py-12 bg-muted/40 border-y border-border/50">
+        <div className="container mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col md:flex-row items-center justify-center gap-8 md:gap-16"
+          >
+            <div className="flex items-center gap-3">
+              <Shield className="h-6 w-6 text-primary" />
+              <div>
+                <p className="font-semibold text-sm">PCI DSS Compliant</p>
+                <p className="text-xs text-muted-foreground">Industry-standard security</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Zap className="h-6 w-6 text-primary" />
+              <div>
+                <p className="font-semibold text-sm">Powered by Helcim</p>
+                <p className="text-xs text-muted-foreground">Trusted payment processing</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Lock className="h-6 w-6 text-primary" />
+              <div>
+                <p className="font-semibold text-sm">Bank-Level Encryption</p>
+                <p className="text-xs text-muted-foreground">256-bit SSL protected</p>
+              </div>
+            </div>
+            <div className="max-w-xs text-center md:text-left">
+              <p className="text-sm italic text-muted-foreground">&ldquo;TuitionPay saved us over $3,000 on our daughter&apos;s tuition. The process was incredibly simple.&rdquo;</p>
+              <p className="text-xs font-medium mt-1">- Sarah M., Parent</p>
+            </div>
+          </motion.div>
         </div>
       </section>
 

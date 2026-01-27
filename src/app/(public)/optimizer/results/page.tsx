@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
@@ -27,11 +27,14 @@ import {
   Sparkles,
   Users,
   AlertCircle,
+  Mail,
+  CheckCircle,
+  Plane,
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAssessment } from '@/hooks/use-assessment'
 import type { CardRecommendationResult } from '@/types/cards'
-import { formatCurrency, generateSavingsExplanation, type SplitStrategy } from '@/lib/matching/card-engine'
+import { formatCurrency, generateSavingsExplanation, getRewardsDisplayType, getPartnerValuations, type SplitStrategy } from '@/lib/matching/card-engine'
 
 export default function ResultsPage() {
   const router = useRouter()
@@ -40,20 +43,10 @@ export default function ResultsPage() {
   const [splitStrategy, setSplitStrategy] = useState<SplitStrategy | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [emailSent, setEmailSent] = useState(false)
+  const [emailSending, setEmailSending] = useState(false)
 
-  useEffect(() => {
-    if (isLoaded && !data.schoolId) {
-      // No assessment data, redirect to start
-      router.replace('/optimizer')
-      return
-    }
-
-    if (isLoaded && data.schoolId) {
-      fetchRecommendations()
-    }
-  }, [isLoaded, data, router])
-
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = useCallback(async () => {
     try {
       const response = await fetch('/api/recommendations', {
         method: 'POST',
@@ -71,10 +64,44 @@ export default function ResultsPage() {
       const result = await response.json()
       setRecommendations(result.recommendations)
       setSplitStrategy(result.splitStrategy)
+      if (result.emailSent) {
+        setEmailSent(true)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
       setIsLoading(false)
+    }
+  }, [data, getSessionId])
+
+  useEffect(() => {
+    if (isLoaded && !data.schoolId) {
+      router.replace('/optimizer')
+      return
+    }
+
+    if (isLoaded && data.schoolId) {
+      fetchRecommendations()
+    }
+  }, [isLoaded, data, router, fetchRecommendations])
+
+  const handleEmailResults = async () => {
+    if (!data.parentEmail) return
+    setEmailSending(true)
+    try {
+      await fetch('/api/recommendations/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: getSessionId(),
+          ...data,
+        }),
+      })
+      setEmailSent(true)
+    } catch {
+      // Silently fail
+    } finally {
+      setEmailSending(false)
     }
   }
 
@@ -158,6 +185,31 @@ export default function ResultsPage() {
               </p>
             </CardContent>
           </Card>
+        </motion.div>
+
+        {/* Email Results Button (M) */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.11 }}
+          className="mb-8"
+        >
+          {emailSent ? (
+            <div className="flex items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
+              <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+              <span>Results have been sent to <strong>{data.parentEmail}</strong></span>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full gap-2"
+              onClick={handleEmailResults}
+              disabled={emailSending || !data.parentEmail}
+            >
+              <Mail className="h-4 w-4" />
+              {emailSending ? 'Sending...' : 'Email My Results'}
+            </Button>
+          )}
         </motion.div>
 
         {/* Pay in Full Warning */}
@@ -246,6 +298,10 @@ export default function ResultsPage() {
                           <span className="text-muted-foreground">Rewards earned:</span>
                           <span className="font-medium">+{formatCurrency(cardInfo.breakdown.rewardsEarned)}</span>
                         </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Processing fee (3%):</span>
+                          <span className="font-medium text-red-600">-{formatCurrency(cardInfo.breakdown.processingFee)}</span>
+                        </div>
                         {cardInfo.card.signup_bonus_requirement && (
                           <div className="pt-2 mt-2 border-t text-xs text-muted-foreground">
                             Bonus requirement: {cardInfo.card.signup_bonus_requirement}
@@ -306,104 +362,177 @@ export default function ResultsPage() {
 
         {/* Recommendations */}
         <div className="space-y-6 mb-12">
-          {recommendations.map((rec, index) => (
-            <motion.div
-              key={rec.card.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + index * 0.1 }}
-            >
-              <Card className={index === 0 ? 'border-primary shadow-lg' : ''}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                        index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted'
-                      }`}>
-                        {index === 0 ? (
-                          <Trophy className="h-5 w-5" />
-                        ) : (
-                          <span className="font-bold">#{rec.rank}</span>
+          {recommendations.map((rec, index) => {
+            const displayType = getRewardsDisplayType(rec.card)
+            const partnerValuations = getPartnerValuations(rec.card)
+            const isMilesOrPoints = displayType === 'airline_miles' || displayType === 'hotel_points'
+            const isTravelPoints = displayType === 'travel_points'
+
+            return (
+              <motion.div
+                key={rec.card.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + index * 0.1 }}
+              >
+                <Card className={index === 0 ? 'border-primary shadow-lg' : ''}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                          index === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted'
+                        }`}>
+                          {index === 0 ? (
+                            <Trophy className="h-5 w-5" />
+                          ) : (
+                            <span className="font-bold">#{rec.rank}</span>
+                          )}
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">{rec.card.card_name}</CardTitle>
+                          <CardDescription>{rec.card.issuer}</CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        {index === 0 && (
+                          <Badge className="bg-primary">Best Match</Badge>
+                        )}
+                        {rec.card.is_business_card && (
+                          <Badge variant="outline">Business</Badge>
+                        )}
+                        {(isMilesOrPoints || isTravelPoints) && (
+                          <Badge variant="outline" className="gap-1">
+                            <Plane className="h-3 w-3" />
+                            Travel
+                          </Badge>
                         )}
                       </div>
-                      <div>
-                        <CardTitle className="text-xl">{rec.card.card_name}</CardTitle>
-                        <CardDescription>{rec.card.issuer}</CardDescription>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Key Stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-3 bg-muted rounded-lg">
+                        <Gift className="h-5 w-5 mx-auto mb-1 text-primary" />
+                        <p className="text-lg font-bold">{formatCurrency(rec.breakdown.signupBonusValue)}</p>
+                        <p className="text-xs text-muted-foreground">Signup Bonus</p>
+                      </div>
+                      <div className="text-center p-3 bg-muted rounded-lg">
+                        <Percent className="h-5 w-5 mx-auto mb-1 text-primary" />
+                        <p className="text-lg font-bold">{rec.card.rewards_rate}%</p>
+                        <p className="text-xs text-muted-foreground">Rewards Rate</p>
+                      </div>
+                      <div className="text-center p-3 bg-muted rounded-lg">
+                        <DollarSign className="h-5 w-5 mx-auto mb-1 text-primary" />
+                        <p className="text-lg font-bold">
+                          {rec.card.annual_fee === 0 ? '$0' : formatCurrency(rec.card.annual_fee)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Annual Fee {rec.card.first_year_waived && rec.card.annual_fee > 0 && '(waived Y1)'}
+                        </p>
+                      </div>
+                      <div className="text-center p-3 bg-primary/10 rounded-lg">
+                        <Calculator className="h-5 w-5 mx-auto mb-1 text-primary" />
+                        <p className="text-lg font-bold text-primary">{formatCurrency(rec.estimatedSavings)}</p>
+                        <p className="text-xs text-muted-foreground">Est. Savings*</p>
                       </div>
                     </div>
-                    {index === 0 && (
-                      <Badge className="bg-primary">Best Match</Badge>
+
+                    {/* Travel/Miles Partner Valuations (F + N) */}
+                    {(isMilesOrPoints || isTravelPoints) && partnerValuations.length > 0 && (
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <h4 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
+                          <Plane className="h-4 w-4" />
+                          Estimated Reward Values by Partner
+                        </h4>
+                        <div className="space-y-2">
+                          {partnerValuations.map((v) => (
+                            <div key={v.partner} className="flex justify-between items-center text-sm">
+                              <span className="text-blue-800">{v.partner}</span>
+                              <span className="font-medium text-blue-900">
+                                {formatCurrency(v.value)}
+                                {v.centsPerPoint > 0 && (
+                                  <span className="text-blue-600 text-xs ml-1">({v.centsPerPoint}c/pt)</span>
+                                )}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                        {/* Miles disclaimer (N) */}
+                        {isMilesOrPoints && (
+                          <p className="text-xs text-blue-700 mt-3 pt-2 border-t border-blue-200">
+                            Note: These miles/points cannot be redeemed for cash. Values shown are estimated travel redemption values and may vary based on availability and booking.
+                          </p>
+                        )}
+                      </div>
                     )}
-                    {rec.card.is_business_card && (
-                      <Badge variant="outline">Business</Badge>
+
+                    {/* Bonus Requirement */}
+                    {rec.card.signup_bonus_requirement && (
+                      <div className="p-3 bg-muted rounded-lg text-sm">
+                        <span className="font-medium">To earn the bonus: </span>
+                        <span className="text-muted-foreground">
+                          {rec.card.signup_bonus_requirement} in {rec.card.signup_bonus_timeframe || 'the first 3 months'}
+                        </span>
+                      </div>
                     )}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Key Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <Gift className="h-5 w-5 mx-auto mb-1 text-primary" />
-                      <p className="text-lg font-bold">{formatCurrency(rec.breakdown.signupBonusValue)}</p>
-                      <p className="text-xs text-muted-foreground">Signup Bonus</p>
-                    </div>
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <Percent className="h-5 w-5 mx-auto mb-1 text-primary" />
-                      <p className="text-lg font-bold">{rec.card.rewards_rate}%</p>
-                      <p className="text-xs text-muted-foreground">Rewards Rate</p>
-                    </div>
-                    <div className="text-center p-3 bg-muted rounded-lg">
-                      <DollarSign className="h-5 w-5 mx-auto mb-1 text-primary" />
-                      <p className="text-lg font-bold">
-                        {rec.card.annual_fee === 0 ? '$0' : formatCurrency(rec.card.annual_fee)}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Annual Fee {rec.card.first_year_waived && rec.card.annual_fee > 0 && '(waived Y1)'}
-                      </p>
-                    </div>
-                    <div className="text-center p-3 bg-primary/10 rounded-lg">
-                      <Calculator className="h-5 w-5 mx-auto mb-1 text-primary" />
-                      <p className="text-lg font-bold text-primary">{formatCurrency(rec.estimatedSavings)}</p>
-                      <p className="text-xs text-muted-foreground">Est. Savings*</p>
-                    </div>
-                  </div>
 
-                  {/* Bonus Requirement */}
-                  {rec.card.signup_bonus_requirement && (
-                    <div className="p-3 bg-muted rounded-lg text-sm">
-                      <span className="font-medium">To earn the bonus: </span>
-                      <span className="text-muted-foreground">
-                        {rec.card.signup_bonus_requirement} in {rec.card.signup_bonus_timeframe || 'the first 3 months'}
-                      </span>
+                    {/* How We Calculated (E - fee breakdown) */}
+                    <Collapsible>
+                      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                        <ChevronDown className="h-4 w-4" />
+                        How we calculated your savings
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="mt-3 p-4 bg-muted rounded-lg">
+                        <div className="space-y-2 text-sm">
+                          {rec.breakdown.signupBonusValue > 0 && (
+                            <div className="flex justify-between">
+                              <span>Signup Bonus</span>
+                              <span className="font-medium text-green-600">+{formatCurrency(rec.breakdown.signupBonusValue)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between">
+                            <span>Rewards Earned ({rec.card.rewards_rate || 1}%)</span>
+                            <span className="font-medium text-green-600">+{formatCurrency(rec.breakdown.rewardsEarned)}</span>
+                          </div>
+                          {rec.breakdown.annualFeeImpact < 0 && (
+                            <div className="flex justify-between">
+                              <span>Annual Fee</span>
+                              <span className="font-medium text-red-600">-{formatCurrency(Math.abs(rec.breakdown.annualFeeImpact))}</span>
+                            </div>
+                          )}
+                          {rec.card.annual_fee > 0 && rec.card.first_year_waived && (
+                            <div className="flex justify-between">
+                              <span>Annual Fee</span>
+                              <span className="font-medium text-muted-foreground">{formatCurrency(rec.card.annual_fee)} (waived Y1)</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between">
+                            <span>Processing Fee (3%)</span>
+                            <span className="font-medium text-red-600">-{formatCurrency(rec.breakdown.processingFee)}</span>
+                          </div>
+                          <div className="flex justify-between pt-2 border-t font-semibold">
+                            <span>Net Savings</span>
+                            <span className="text-primary">{formatCurrency(rec.breakdown.netFirstYearValue)}</span>
+                          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {/* CTA */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button className="flex-1" variant={index === 0 ? 'default' : 'outline'} asChild>
+                        <a href={rec.card.application_url || '#'} target="_blank" rel="noopener noreferrer">
+                          Learn More About This Card
+                          <ExternalLink className="ml-2 h-4 w-4" />
+                        </a>
+                      </Button>
                     </div>
-                  )}
-
-                  {/* How We Calculated */}
-                  <Collapsible>
-                    <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <ChevronDown className="h-4 w-4" />
-                      How we calculated your savings
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="mt-3 p-4 bg-muted rounded-lg">
-                      <pre className="text-sm whitespace-pre-wrap font-mono">
-                        {generateSavingsExplanation(rec, data.tuitionAmount)}
-                      </pre>
-                    </CollapsibleContent>
-                  </Collapsible>
-
-                  {/* CTA */}
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button className="flex-1" variant={index === 0 ? 'default' : 'outline'} asChild>
-                      <a href={rec.card.application_url || '#'} target="_blank" rel="noopener noreferrer">
-                        Learn More About This Card
-                        <ExternalLink className="ml-2 h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )
+          })}
         </div>
 
         {/* Next Steps */}
@@ -493,7 +622,7 @@ export default function ResultsPage() {
           </Alert>
         </motion.div>
 
-        {/* Important Warnings */}
+        {/* Important Warnings (L - removed last tip) */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -509,7 +638,6 @@ export default function ResultsPage() {
                 <li>If applying for business cards: use your legal name as business name, your SSN, and home address</li>
                 <li>Wait until you receive your physical card before making the tuition payment</li>
                 <li>Pay off your balance in full to avoid interest charges that would reduce your savings</li>
-                <li>Don&apos;t apply for too many cards at once - space applications 30-90 days apart if possible</li>
               </ul>
             </AlertDescription>
           </Alert>

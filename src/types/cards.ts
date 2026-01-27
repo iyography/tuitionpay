@@ -11,7 +11,14 @@ export interface SavingsBreakdown {
   signupBonusValue: number
   rewardsEarned: number
   annualFeeImpact: number
+  processingFee: number
   netFirstYearValue: number
+}
+
+export interface PartnerValuation {
+  partner: string
+  value: number
+  centsPerPoint: number
 }
 
 export interface CardMatchingCriteria {
@@ -23,6 +30,8 @@ export interface CardMatchingCriteria {
   tuitionAmount: number
   recentCardApplications: string // '0', '1-2', '3-4', '5+'
   amexHistoryCards: string[] // Which AMEX cards user has had
+  preferredAirlines?: string[]
+  preferredHotels?: string[]
 }
 
 export function getCreditScoreMinimum(range: string): number {

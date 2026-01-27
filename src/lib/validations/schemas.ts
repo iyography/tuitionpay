@@ -65,6 +65,8 @@ export const assessmentSchema = z.object({
   monthlySpendCapacity: z.number().min(0).max(50000),
   preferredRewardsType: z.enum(['cash_back', 'travel_points', 'statement_credits', 'flexible']),
   openToBusinessCards: z.boolean(),
+  preferredAirlines: z.array(z.string()).optional(),
+  preferredHotels: z.array(z.string()).optional(),
 })
 
 // Payment form schema

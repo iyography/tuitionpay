@@ -25,6 +25,8 @@ interface CardRecommendation {
   estimatedSavings: number
   benefits?: string | null
   isBusinessCard: boolean
+  rewardsType?: string | null
+  processingFee?: number
 }
 
 interface RecommendationEmailParams {
@@ -168,6 +170,17 @@ export async function sendRecommendationEmail(params: RecommendationEmailParams)
               <h2 style="margin: 0 0 16px 0; font-size: 18px; color: #111827;">Your Top ${recommendations.length} Card Recommendations</h2>
 
               ${cardsHtml}
+
+              <!-- Miles/Points Disclaimer (N) -->
+              ${recommendations.some(r => r.rewardsType && (r.rewardsType.includes('airline') || r.rewardsType.includes('miles') || r.rewardsType.includes('hotel'))) ? `
+              <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                <h4 style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px;">About Miles & Points Values</h4>
+                <p style="margin: 0; font-size: 13px; color: #1e40af;">
+                  Some cards above earn airline miles or hotel points rather than cash back. These miles/points cannot be redeemed for cash.
+                  Values shown are estimated travel redemption values and may vary based on availability, booking class, and redemption method.
+                </p>
+              </div>
+              ` : ''}
 
               <!-- How to Apply Section -->
               <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px; margin: 24px 0;">
