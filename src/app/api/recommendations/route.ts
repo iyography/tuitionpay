@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validatedData = assessmentSchema.safeParse(body)
     if (!validatedData.success) {
+      console.error('Assessment validation failed:', validatedData.error.issues)
       return NextResponse.json(
         { error: 'Invalid assessment data', details: validatedData.error.issues },
         { status: 400 }
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
       amexHistoryCards,
       preferredAirlines,
       preferredHotels,
-    } = body
+    } = validatedData.data
 
     const supabase = await createClient()
 
@@ -124,6 +125,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send recommendation email if parent email provided
+    let emailSent = false
     if (parentEmail) {
       try {
         const emailRecommendations = recommendations.map(rec => ({
@@ -161,6 +163,7 @@ export async function POST(request: NextRequest) {
           recommendations: emailRecommendations,
           splitStrategy: emailSplitStrategy,
         })
+        emailSent = true
       } catch (emailError) {
         console.error('Failed to send recommendation email:', emailError)
         // Don't fail the request if email fails
@@ -171,6 +174,7 @@ export async function POST(request: NextRequest) {
       recommendations,
       splitStrategy,
       assessmentId: assessment?.id,
+      emailSent,
     })
   } catch (error) {
     console.error('Recommendations API error:', error)

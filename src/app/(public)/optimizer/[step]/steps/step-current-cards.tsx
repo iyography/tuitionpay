@@ -66,6 +66,17 @@ const CARDS_BY_ISSUER: Record<string, string[]> = {
     'Citi AAdvantage Executive',
     'Costco Anywhere Visa',
   ],
+  'Wells Fargo': [
+    'Wells Fargo Signify Business Cash',
+    'Wells Fargo Autograph Journey',
+    'Wells Fargo Active Cash',
+    'Wells Fargo Autograph',
+  ],
+  'US Bank': [
+    'US Bank Triple Cash Rewards Visa',
+    'US Bank Altitude Reserve',
+    'US Bank Altitude Go',
+  ],
 }
 
 export function StepCurrentCards({ data, updateData, setCanProceed }: StepCurrentCardsProps) {

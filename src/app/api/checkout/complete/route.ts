@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       transactionDetails = null
     }
 
-    const status = transactionDetails?.status === 'approved' ? 'completed' : 'completed'
+    const status = transactionDetails?.status === 'approved' ? 'completed' : 'failed'
     const cardLastFour = transactionDetails?.cardLastFour || '****'
 
     // Update payment record

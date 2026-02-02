@@ -39,8 +39,8 @@ export function StepTuition({ data, updateData, setCanProceed }: StepTuitionProp
   }
 
   const handleFocus = () => {
-    // Remove formatting on focus
-    setDisplayValue(data.tuitionAmount.toString())
+    // Remove formatting on focus, show empty if zero (no leading 0)
+    setDisplayValue(data.tuitionAmount ? data.tuitionAmount.toString() : '')
   }
 
   return (

@@ -55,6 +55,8 @@ export const MAJOR_CARD_ISSUERS = [
   'American Express',
   'Capital One',
   'Citi',
+  'Wells Fargo',
+  'US Bank',
 ] as const
 
 // AMEX cards to check for history (affects eligibility)

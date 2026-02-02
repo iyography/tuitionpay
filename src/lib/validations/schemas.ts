@@ -54,19 +54,23 @@ export const businessCardsSchema = z.object({
 
 // Complete assessment schema
 export const assessmentSchema = z.object({
+  sessionId: z.string().optional(),
   schoolId: z.string().uuid(),
   schoolName: z.string().min(1),
   studentName: z.string().min(2),
   studentIdentifier: z.string().optional(),
-  parentEmail: z.string().email().optional(),
+  parentEmail: z.string().email().optional().or(z.literal('')),
   tuitionAmount: z.number().min(100).max(100000),
-  creditScoreRange: z.enum(['excellent', 'good', 'fair', 'below']),
-  currentCards: z.array(z.string()),
-  monthlySpendCapacity: z.number().min(0).max(50000),
+  recentCardApplications: z.string().optional().default('0'),
+  amexHistoryCards: z.array(z.string()).optional().default([]),
+  currentCards: z.array(z.string()).default([]),
   preferredRewardsType: z.enum(['cash_back', 'travel_points', 'statement_credits', 'flexible']),
   openToBusinessCards: z.boolean(),
   preferredAirlines: z.array(z.string()).optional(),
   preferredHotels: z.array(z.string()).optional(),
+  // Legacy fields — no longer collected in quiz but kept for backwards compatibility
+  creditScoreRange: z.enum(['excellent', 'good', 'fair', 'below']).optional().default('good'),
+  monthlySpendCapacity: z.number().min(0).max(50000).optional().default(0),
 })
 
 // Payment form schema

@@ -223,7 +223,7 @@ export default function HomePage() {
               <motion.div variants={itemVariants} className="mb-8">
                 <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-white/60 backdrop-blur-sm px-5 py-2 text-sm font-medium shadow-lg shadow-primary/5">
                   <TrendingUp className="h-4 w-4 text-primary" />
-                  <span className="text-foreground/80">Parents are saving <span className="font-semibold text-primary">12%</span> on yearly tuition costs</span>
+                  <span className="text-foreground/80">Parents are saving an average of <span className="font-semibold text-primary">12%</span> on yearly tuition costs</span>
                 </div>
               </motion.div>
 
@@ -260,6 +260,16 @@ export default function HomePage() {
                 <Button size="lg" variant="outline" className="h-16 px-10 text-lg rounded-full bg-white/60 backdrop-blur-sm border-2 border-primary/30 hover:bg-white/80 hover:border-primary/50 transition-all duration-300 font-semibold" asChild>
                   <Link href="/pay">Pay Tuition Now</Link>
                 </Button>
+              </motion.div>
+
+              {/* Partner Schools Link */}
+              <motion.div variants={itemVariants} className="mt-6">
+                <Link
+                  href="/partner"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
+                >
+                  Potential Partner Schools? Click Here
+                </Link>
               </motion.div>
 
               {/* Trust Indicators */}
@@ -501,102 +511,6 @@ export default function HomePage() {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* How Your Money Moves - Flow Diagram (A) */}
-      <section className="py-20 md:py-28 bg-gradient-to-b from-muted/20 to-background relative">
-        <div className="container mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">How Your Money Moves</h2>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="max-w-4xl mx-auto"
-          >
-            {/* Flow Diagram */}
-            <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-0 mb-10">
-              {/* Parent Node */}
-              <div className="flex flex-col items-center">
-                <Card className="border-2 border-primary/30 shadow-lg bg-white px-6 py-4 text-center">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Users2 className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-lg">Parent</p>
-                      <p className="text-sm text-muted-foreground">Pays with credit card</p>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Arrow 1 */}
-              <div className="flex flex-col items-center mx-2">
-                <ArrowRight className="h-6 w-6 text-primary hidden md:block" />
-                <ChevronDown className="h-6 w-6 text-primary md:hidden" />
-                <div className="flex items-center gap-1 mt-1">
-                  <Timer className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground font-medium">Instant</span>
-                </div>
-              </div>
-
-              {/* Payment Processor Node */}
-              <div className="flex flex-col items-center">
-                <Card className="border-2 border-amber-300 shadow-lg bg-gradient-to-br from-amber-50 to-white px-6 py-4 text-center">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-amber-100 flex items-center justify-center">
-                      <Shield className="h-6 w-6 text-amber-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-lg">Payment Processor</p>
-                      <p className="text-sm text-muted-foreground">Powered by Helcim</p>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* Arrow 2 */}
-              <div className="flex flex-col items-center mx-2">
-                <ArrowRight className="h-6 w-6 text-primary hidden md:block" />
-                <ChevronDown className="h-6 w-6 text-primary md:hidden" />
-                <div className="flex items-center gap-1 mt-1">
-                  <Timer className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground font-medium">1-2 Business Days</span>
-                </div>
-              </div>
-
-              {/* School Node */}
-              <div className="flex flex-col items-center">
-                <Card className="border-2 border-emerald-300 shadow-lg bg-gradient-to-br from-emerald-50 to-white px-6 py-4 text-center">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-xl bg-emerald-100 flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-emerald-600" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-semibold text-lg">School</p>
-                      <p className="text-sm text-muted-foreground">Receives full tuition</p>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-            </div>
-
-            {/* Caption */}
-            <p className="text-center text-muted-foreground max-w-2xl mx-auto">
-              No hidden fees. Parents pay a standard 3% processing fee and still save 10-12% through card rewards.
-            </p>
-          </motion.div>
         </div>
       </section>
 
@@ -967,28 +881,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Floating Demo Button */}
-      <Link href="/demo" className="fixed bottom-6 right-6 z-50 group">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 2, type: 'spring', stiffness: 200 }}
-          className="relative"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-          <div className="relative h-16 w-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-xl hover:shadow-2xl transition-all duration-300 group-hover:scale-110">
-            <motion.div
-              animate={{ rotateY: 360 }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-            >
-              <Coins className="h-8 w-8 text-white" />
-            </motion.div>
-          </div>
-          <div className="absolute -top-12 right-0 bg-slate-900 text-white text-sm px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Try Full Demo
-          </div>
-        </motion.div>
-      </Link>
     </div>
   )
 }

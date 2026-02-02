@@ -27,12 +27,12 @@ import {
   ArrowRight,
   Building,
   Mail,
-  Phone,
-  MapPin,
   Loader2,
-  Gift,
   Shield,
   Zap,
+  CreditCard,
+  Banknote,
+  ArrowDown,
 } from 'lucide-react'
 
 const schoolApplicationSchema = z.object({
@@ -231,7 +231,7 @@ export default function PartnerPage() {
         </div>
       </section>
 
-      {/* Fee Messaging Callout (I) */}
+      {/* Fee Messaging Callout */}
       <section className="py-8">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto">
@@ -254,6 +254,90 @@ export default function PartnerPage() {
                   </div>
                 </div>
               </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* How Payments Move Section */}
+      <section className="py-12 bg-muted/30">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="text-center mb-8"
+            >
+              <h2 className="text-2xl font-bold mb-3">How Payments Move</h2>
+              <p className="text-muted-foreground">
+                Secure, direct processing powered by Helcim
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="text-center"
+              >
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-semibold mb-2">1. Parent Pays</h3>
+                <p className="text-sm text-muted-foreground">
+                  Parent enters card details on our secure Helcim-powered checkout
+                </p>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6 }}
+                className="text-center relative"
+              >
+                <div className="hidden md:block absolute left-0 top-8 -translate-x-1/2">
+                  <ArrowDown className="h-6 w-6 text-muted-foreground rotate-[-90deg]" />
+                </div>
+                <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                  <Shield className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-semibold mb-2">2. Helcim Processes</h3>
+                <p className="text-sm text-muted-foreground">
+                  Helcim securely processes the payment. TuitionPay never touches the funds.
+                </p>
+                <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
+                  <ArrowDown className="h-6 w-6 text-muted-foreground rotate-[-90deg]" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="text-center"
+              >
+                <div className="h-16 w-16 rounded-2xl bg-green-100 flex items-center justify-center mx-auto mb-4">
+                  <Banknote className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="font-semibold mb-2">3. School Receives</h3>
+                <p className="text-sm text-muted-foreground">
+                  Full tuition deposited directly to your school&apos;s bank account
+                </p>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8 }}
+              className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center"
+            >
+              <p className="text-sm text-blue-800">
+                <strong>Key Point:</strong> TuitionPay never holds or has access to your funds.
+                All payments flow directly from parent → Helcim → school.
+              </p>
             </motion.div>
           </div>
         </div>

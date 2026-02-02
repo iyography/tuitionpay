@@ -53,7 +53,7 @@ export function StepBusinessCards({ data, updateData, setCanProceed }: StepBusin
           </div>
           <div className="flex-1">
             <Label htmlFor="business-yes" className="cursor-pointer font-medium block">
-              Yes, include business cards
+              Yes, include business credit cards
             </Label>
             <p className="text-sm text-muted-foreground mt-1">
               I have a business, side income, freelance work, or sell items online
