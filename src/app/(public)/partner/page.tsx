@@ -234,7 +234,7 @@ export default function PartnerPage() {
       {/* Fee Messaging Callout */}
       <section className="py-8">
         <div className="container mx-auto px-6">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto space-y-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -250,6 +250,26 @@ export default function PartnerPage() {
                     <p className="text-emerald-800 text-sm leading-relaxed">
                       Processing fees are absorbed by parents — who still save 10-12% after fees. Your school receives the{' '}
                       <strong>full tuition amount</strong> plus a revenue share on processing fees. Zero cost, zero risk to your school.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35 }}
+            >
+              <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <CreditCard className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-blue-900 mb-2">Additional Payment Option</h3>
+                    <p className="text-blue-800 text-sm leading-relaxed">
+                      Your school can now accept credit cards as a payment method for tuition through our portal — even if you don&apos;t currently offer credit card payments. Give your families more flexibility in how they pay.
                     </p>
                   </div>
                 </div>

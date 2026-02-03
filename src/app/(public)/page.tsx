@@ -211,7 +211,7 @@ export default function HomePage() {
           }}
         />
 
-        <motion.div style={{ y, opacity }} className="relative z-10 w-full">
+        <motion.div style={{ y, opacity }} className="relative z-10 w-full pt-28 md:pt-32">
           <div className="container mx-auto px-6">
             <motion.div
               variants={containerVariants}
@@ -268,7 +268,7 @@ export default function HomePage() {
                   href="/partner"
                   className="text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
                 >
-                  Potential Partner Schools? Click Here
+                  Potential Partner School? Click Here
                 </Link>
               </motion.div>
 
