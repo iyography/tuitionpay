@@ -13,18 +13,51 @@ const DEFAULT_CREDIT_SCORE = 700
 const MAX_CARDS_TO_PROCESS = 500
 const MAX_SPLIT_CANDIDATES = 10
 const MAX_INPUT_STRING_LENGTH = 200
-const CATEGORY_PREFERENCE_MULTIPLIER = 1.2
-const PREFERRED_PARTNER_MULTIPLIER = 1.4
 
-// Travel partner multipliers (from revision doc)
-const TRAVEL_MULTIPLIERS = {
-  delta: 1.2,
-  southwest: 1.5,
-  hyatt: 2.2,
-  united: 1.2,
-  aa: 1.3,
-  marriott: 0.7,
-} as const
+// ═══════════════════════════════════════════════════════════════════════════
+// POINTS VALUATION MATRIX (Value per 100 points in dollars)
+// Based on client specifications
+// ═══════════════════════════════════════════════════════════════════════════
+
+interface PointsValuation {
+  cash: number
+  delta: number | null
+  southwest: number | null
+  hyatt: number | null
+  marriott: number | null
+  united: number | null
+  aa: number | null
+}
+
+const POINTS_VALUATION: Record<string, PointsValuation> = {
+  // Generic issuer valuations
+  chase: { cash: 1, delta: null, southwest: 1.5, hyatt: 2.2, marriott: null, united: 1.2, aa: null },
+  amex: { cash: 0.6, delta: 1.2, southwest: null, hyatt: null, marriott: 0.7, united: null, aa: null },
+  hilton: { cash: 1, delta: null, southwest: null, hyatt: null, marriott: 0.7, united: null, aa: null },
+  citi: { cash: 1, delta: null, southwest: null, hyatt: null, marriott: null, united: null, aa: null },
+  'us bank': { cash: 1, delta: null, southwest: null, hyatt: null, marriott: null, united: null, aa: null },
+  'wells fargo': { cash: 1, delta: null, southwest: null, hyatt: null, marriott: null, united: null, aa: null },
+  'capital one': { cash: 1, delta: null, southwest: null, hyatt: null, marriott: null, united: null, aa: null },
+
+  // Branded card valuations (override generic)
+  delta_amex: { cash: 0, delta: 1.2, southwest: null, hyatt: null, marriott: null, united: null, aa: null },
+  southwest_chase: { cash: 0, delta: null, southwest: 1.5, hyatt: null, marriott: null, united: null, aa: null },
+  united_chase: { cash: 0, delta: null, southwest: null, hyatt: null, marriott: null, united: 1.2, aa: null },
+  citi_aa: { cash: 0, delta: null, southwest: null, hyatt: null, marriott: null, united: null, aa: 1.2 },
+}
+
+// Cards that allow Chase transfer partners (Sapphire/Ink Preferred unlock transfers for all Chase cards)
+const CHASE_TRANSFER_ENABLERS = [
+  'chase sapphire preferred',
+  'chase sapphire reserve',
+  'chase ink business preferred',
+]
+
+// Statement credit cards (bonus not multiplied by points valuation)
+const STATEMENT_CREDIT_CARDS = [
+  'amex blue cash everyday',
+  'citi double cash',
+]
 
 // ═══════════════════════════════════════════════════════════════════════════
 // VALIDATION SCHEMA
@@ -46,7 +79,7 @@ export const CardMatchingCriteriaSchema = z.object({
 })
 
 // ═══════════════════════════════════════════════════════════════════════════
-// TYPE GUARDS
+// TYPE GUARDS & UTILITIES
 // ═══════════════════════════════════════════════════════════════════════════
 
 function isValidCreditCard(card: unknown): card is CreditCard {
@@ -59,12 +92,13 @@ function isValidCreditCard(card: unknown): card is CreditCard {
   )
 }
 
-function isFinitePositive(value: unknown): value is number {
-  return typeof value === 'number' && Number.isFinite(value) && value > 0
+function safeRound(value: number): number {
+  if (!Number.isFinite(value)) return 0
+  return Math.round(value * 100) / 100
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// MEMOIZATION & CACHING
+// CACHING
 // ═══════════════════════════════════════════════════════════════════════════
 
 const spendRequirementCache = new Map<string, number>()
@@ -74,21 +108,29 @@ interface CardMetadata {
   issuerLower: string
   isAmex: boolean
   isChase: boolean
+  isCiti: boolean
+  isCapitalOne: boolean
+  isWellsFargo: boolean
+  isUSBank: boolean
   isPersonalPlatinum: boolean
   isPersonalGold: boolean
   isBusinessPlatinum: boolean
   isBusinessGold: boolean
-  isChaseInk: boolean
   spendRequirement: number
   category: 'cash_back' | 'travel'
   primaryAirline: string | null
   primaryHotel: string | null
   isFlexiblePointsCard: boolean
+  isDeltaCard: boolean
+  isSouthwestCard: boolean
+  isUnitedCard: boolean
+  isAACard: boolean
+  isStatementCreditCard: boolean
+  valuationKey: string
 }
 
 const cardMetadataCache = new WeakMap<CreditCard, CardMetadata>()
 
-// Clear spend requirement cache if it gets too large
 function maintainCache(): void {
   if (spendRequirementCache.size > 500) {
     spendRequirementCache.clear()
@@ -96,27 +138,16 @@ function maintainCache(): void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// UTILITY FUNCTIONS
+// SPEND REQUIREMENT PARSING
 // ═══════════════════════════════════════════════════════════════════════════
 
-function safeRound(value: number): number {
-  if (!Number.isFinite(value)) return 0
-  return Math.round(value * 100) / 100
-}
-
-/**
- * Parse spend requirement from card description
- * @example "Spend $4,000 in 3 months" -> 4000
- */
 function parseSpendRequirement(requirement: string | null): number {
   if (!requirement) return 0
 
-  // Check cache
   const cached = spendRequirementCache.get(requirement)
   if (cached !== undefined) return cached
 
   try {
-    // Limit input length for security
     const sanitized = requirement.slice(0, MAX_INPUT_STRING_LENGTH)
     const match = sanitized.match(/\$?([\d,]+)/)
 
@@ -130,16 +161,16 @@ function parseSpendRequirement(requirement: string | null): number {
 
     spendRequirementCache.set(requirement, result)
     return result
-  } catch (error) {
-    console.error('[card-engine] Failed to parse spend requirement:', { requirement, error })
+  } catch {
     spendRequirementCache.set(requirement, 0)
     return 0
   }
 }
 
-/**
- * Pre-compute card metadata for efficient filtering
- */
+// ═══════════════════════════════════════════════════════════════════════════
+// CARD METADATA EXTRACTION
+// ═══════════════════════════════════════════════════════════════════════════
+
 function getCardMetadata(card: CreditCard): CardMetadata {
   const cached = cardMetadataCache.get(card)
   if (cached) return cached
@@ -147,21 +178,49 @@ function getCardMetadata(card: CreditCard): CardMetadata {
   const cardNameLower = card.card_name.toLowerCase()
   const issuerLower = card.issuer.toLowerCase()
 
+  const isAmex = issuerLower.includes('amex') || issuerLower.includes('american express')
+  const isChase = issuerLower.includes('chase')
+  const isCiti = issuerLower.includes('citi')
+  const isCapitalOne = issuerLower.includes('capital one')
+  const isWellsFargo = issuerLower.includes('wells fargo')
+  const isUSBank = issuerLower.includes('us bank')
+
+  const isDeltaCard = cardNameLower.includes('delta')
+  const isSouthwestCard = cardNameLower.includes('southwest')
+  const isUnitedCard = cardNameLower.includes('united')
+  const isAACard = cardNameLower.includes('aadvantage') || cardNameLower.includes('american airlines')
+
+  // Determine valuation key
+  let valuationKey = issuerLower
+  if (isDeltaCard && isAmex) valuationKey = 'delta_amex'
+  else if (isSouthwestCard && isChase) valuationKey = 'southwest_chase'
+  else if (isUnitedCard && isChase) valuationKey = 'united_chase'
+  else if (isAACard && isCiti) valuationKey = 'citi_aa'
+
   const metadata: CardMetadata = {
     normalizedName: cardNameLower,
     issuerLower,
-    isAmex: issuerLower.includes('amex') || issuerLower.includes('american express'),
-    isChase: issuerLower.includes('chase'),
+    isAmex,
+    isChase,
+    isCiti,
+    isCapitalOne,
+    isWellsFargo,
+    isUSBank,
     isPersonalPlatinum: cardNameLower.includes('platinum') && !cardNameLower.includes('business'),
     isPersonalGold: cardNameLower.includes('gold') && !cardNameLower.includes('business'),
     isBusinessPlatinum: cardNameLower.includes('platinum') && cardNameLower.includes('business'),
     isBusinessGold: cardNameLower.includes('gold') && cardNameLower.includes('business'),
-    isChaseInk: cardNameLower.includes('ink') && issuerLower.includes('chase'),
     spendRequirement: parseSpendRequirement(card.signup_bonus_requirement),
     category: getCardCategory(card),
     primaryAirline: getCardPrimaryAirline(cardNameLower),
     primaryHotel: getCardPrimaryHotel(cardNameLower),
     isFlexiblePointsCard: checkIsFlexiblePointsCard(cardNameLower, issuerLower),
+    isDeltaCard,
+    isSouthwestCard,
+    isUnitedCard,
+    isAACard,
+    isStatementCreditCard: STATEMENT_CREDIT_CARDS.some(c => cardNameLower.includes(c)),
+    valuationKey,
   }
 
   cardMetadataCache.set(card, metadata)
@@ -201,88 +260,204 @@ function getCardPrimaryHotel(cardNameLower: string): string | null {
 function checkIsFlexiblePointsCard(cardNameLower: string, issuerLower: string): boolean {
   return (
     cardNameLower.includes('sapphire') ||
+    cardNameLower.includes('ink business preferred') ||
     cardNameLower.includes('venture x') ||
     cardNameLower.includes('venture') ||
     (cardNameLower.includes('gold') && issuerLower.includes('amex')) ||
-    (cardNameLower.includes('platinum') && issuerLower.includes('amex')) ||
-    cardNameLower.includes('membership rewards')
+    (cardNameLower.includes('platinum') && issuerLower.includes('amex'))
   )
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SAVINGS CALCULATION
+// POINTS VALUE CALCULATION
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
- * Calculate savings breakdown for a card
+ * Get the best valuation multiplier for a card based on user preferences
  */
-function calculateSavingsBreakdown(
+function getPointsValuation(
   card: CreditCard,
-  tuitionAmount: number
-): SavingsBreakdown {
-  try {
-    const signupBonusValue = card.signup_bonus_value ?? 0
-    const rewardsRate = (card.rewards_rate ?? 1) / 100
-    const rewardsEarned = tuitionAmount * rewardsRate
-    const annualFeeImpact = card.first_year_waived ? 0 : -(card.annual_fee ?? 0)
-    const processingFee = tuitionAmount * PROCESSING_FEE_RATE
-    const netFirstYearValue = signupBonusValue + rewardsEarned + annualFeeImpact - processingFee
+  meta: CardMetadata,
+  preferredRewardsType: string,
+  preferredAirlines?: string[],
+  preferredHotels?: string[],
+  userHasChaseTransferCard?: boolean
+): { multiplier: number; partner: string } {
+  const valuation = POINTS_VALUATION[meta.valuationKey] || POINTS_VALUATION[meta.issuerLower] || { cash: 1 }
 
-    return {
-      signupBonusValue,
-      rewardsEarned: safeRound(rewardsEarned),
-      annualFeeImpact,
-      processingFee: safeRound(processingFee),
-      netFirstYearValue: safeRound(netFirstYearValue),
+  // Statement credit cards always use 1:1 cash value
+  if (meta.isStatementCreditCard) {
+    return { multiplier: 1, partner: 'Cash' }
+  }
+
+  // For cash back preference, use cash value
+  if (preferredRewardsType === 'cash_back') {
+    return { multiplier: valuation.cash || 1, partner: 'Cash' }
+  }
+
+  // For travel preference, find best travel partner
+  let bestMultiplier = valuation.cash || 1
+  let bestPartner = 'Cash'
+
+  // Check if Chase card can use transfer partners
+  const canUseChaseTransfers = meta.isChase && (
+    meta.isFlexiblePointsCard ||
+    userHasChaseTransferCard ||
+    CHASE_TRANSFER_ENABLERS.some(c => meta.normalizedName.includes(c))
+  )
+
+  // Check preferred airlines
+  if (preferredAirlines?.length) {
+    if (preferredAirlines.some(a => a.includes('Delta')) && valuation.delta && valuation.delta > bestMultiplier) {
+      bestMultiplier = valuation.delta
+      bestPartner = 'Delta'
     }
-  } catch (error) {
-    console.error('[card-engine] Failed to calculate savings:', { cardId: card.id, error })
-    return {
-      signupBonusValue: 0,
-      rewardsEarned: 0,
-      annualFeeImpact: 0,
-      processingFee: safeRound(tuitionAmount * PROCESSING_FEE_RATE),
-      netFirstYearValue: 0,
+    if (preferredAirlines.some(a => a.includes('Southwest')) && valuation.southwest && valuation.southwest > bestMultiplier) {
+      bestMultiplier = valuation.southwest
+      bestPartner = 'Southwest'
+    }
+    if (preferredAirlines.some(a => a.includes('United')) && valuation.united && valuation.united > bestMultiplier) {
+      if (canUseChaseTransfers || meta.isUnitedCard) {
+        bestMultiplier = valuation.united
+        bestPartner = 'United'
+      }
+    }
+    if (preferredAirlines.some(a => a.includes('American')) && valuation.aa && valuation.aa > bestMultiplier) {
+      bestMultiplier = valuation.aa
+      bestPartner = 'American Airlines'
     }
   }
+
+  // Check preferred hotels
+  if (preferredHotels?.length) {
+    if (preferredHotels.some(h => h.includes('Hyatt')) && valuation.hyatt && valuation.hyatt > bestMultiplier) {
+      if (canUseChaseTransfers) {
+        bestMultiplier = valuation.hyatt
+        bestPartner = 'Hyatt'
+      }
+    }
+    if (preferredHotels.some(h => h.includes('Marriott')) && valuation.marriott && valuation.marriott > bestMultiplier) {
+      bestMultiplier = valuation.marriott
+      bestPartner = 'Marriott'
+    }
+  }
+
+  // For flexible or if no specific preference matched, use best available
+  if (preferredRewardsType === 'flexible' || bestPartner === 'Cash') {
+    // Find highest value partner
+    if (valuation.hyatt && valuation.hyatt > bestMultiplier && canUseChaseTransfers) {
+      bestMultiplier = valuation.hyatt
+      bestPartner = 'Hyatt'
+    }
+    if (valuation.southwest && valuation.southwest > bestMultiplier) {
+      bestMultiplier = valuation.southwest
+      bestPartner = 'Southwest'
+    }
+    if (valuation.delta && valuation.delta > bestMultiplier) {
+      bestMultiplier = valuation.delta
+      bestPartner = 'Delta'
+    }
+    if (valuation.united && valuation.united > bestMultiplier && (canUseChaseTransfers || meta.isUnitedCard)) {
+      bestMultiplier = valuation.united
+      bestPartner = 'United'
+    }
+  }
+
+  return { multiplier: bestMultiplier, partner: bestPartner }
 }
 
 /**
- * Get partner-specific valuations for a card
+ * Calculate the dollar value of points
  */
-export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
-  if (!isValidCreditCard(card)) return []
+function calculatePointsValue(points: number, multiplier: number): number {
+  // Points are stored as raw count (e.g., 75000)
+  // Multiplier is cents per point (e.g., 1 = 1 cent, 2.2 = 2.2 cents)
+  return safeRound((points * multiplier) / 100)
+}
 
-  try {
-    const valuations: PartnerValuation[] = []
-    const pointCashValue = card.point_cash_value ?? 1
+// ═══════════════════════════════════════════════════════════════════════════
+// SAVINGS CALCULATION (NEW - Points-based with ACH)
+// ═══════════════════════════════════════════════════════════════════════════
 
-    if (card.cash_value) {
-      valuations.push({ partner: 'Cash Back', value: card.cash_value, centsPerPoint: pointCashValue })
-    }
-    if (card.hyatt_value) {
-      valuations.push({ partner: 'Hyatt', value: card.hyatt_value, centsPerPoint: TRAVEL_MULTIPLIERS.hyatt })
-    }
-    if (card.delta_value) {
-      valuations.push({ partner: 'Delta', value: card.delta_value, centsPerPoint: TRAVEL_MULTIPLIERS.delta })
-    }
-    if (card.marriott_value) {
-      valuations.push({ partner: 'Marriott', value: card.marriott_value, centsPerPoint: TRAVEL_MULTIPLIERS.marriott })
-    }
-    if (card.southwest_value) {
-      valuations.push({ partner: 'Southwest', value: card.southwest_value, centsPerPoint: TRAVEL_MULTIPLIERS.southwest })
-    }
-    if (card.united_value) {
-      valuations.push({ partner: 'United', value: card.united_value, centsPerPoint: TRAVEL_MULTIPLIERS.united })
-    }
-    if (card.aa_value) {
-      valuations.push({ partner: 'American Airlines', value: card.aa_value, centsPerPoint: TRAVEL_MULTIPLIERS.aa })
-    }
+export interface EnhancedSavingsBreakdown extends SavingsBreakdown {
+  payOnCard: number              // Amount to charge on card (tuition portion)
+  payOnCardWithFee: number       // Amount including processing fee
+  tuitionOnACH: number           // Remainder to pay via ACH
+  signupBonusPoints: number      // Raw points from signup bonus
+  rewardsPoints: number          // Raw points from spending
+  totalPoints: number            // Total points earned
+  pointsValuation: number        // Multiplier used (cents per point)
+  valuationPartner: string       // Partner used for valuation
+  savingsPercentage: number      // Net savings as % of tuition portion
+  isTravel: boolean              // Whether this uses travel valuation
+}
 
-    return valuations
-  } catch (error) {
-    console.error('[card-engine] Failed to get partner valuations:', { cardId: card.id, error })
-    return []
+/**
+ * Calculate savings for a card with ACH recommendation
+ * Key rule: Never charge more than the spend requirement on the card
+ */
+function calculateEnhancedSavings(
+  card: CreditCard,
+  tuitionAmount: number,
+  preferredRewardsType: string,
+  preferredAirlines?: string[],
+  preferredHotels?: string[],
+  userHasChaseTransferCard?: boolean
+): EnhancedSavingsBreakdown {
+  const meta = getCardMetadata(card)
+  const spendReq = meta.spendRequirement
+
+  // Key rule: Only put up to the spend requirement on the card
+  const payOnCard = Math.min(spendReq, tuitionAmount)
+  const tuitionOnACH = Math.max(0, tuitionAmount - payOnCard)
+
+  // Processing fee only applies to card payment
+  const processingFee = safeRound(payOnCard * PROCESSING_FEE_RATE)
+  const payOnCardWithFee = safeRound(payOnCard + processingFee)
+
+  // Get points valuation
+  const { multiplier, partner } = getPointsValuation(
+    card, meta, preferredRewardsType, preferredAirlines, preferredHotels, userHasChaseTransferCard
+  )
+
+  // Calculate points earned
+  const signupBonusPoints = card.signup_bonus_value ?? 0
+  const rewardsRate = (card.rewards_rate ?? 1) / 100
+  // Rewards earned on total charge (including fee) as that's what earns points
+  const rewardsPoints = Math.round(payOnCardWithFee * rewardsRate * 100) // Convert to points
+  const totalPoints = signupBonusPoints + rewardsPoints
+
+  // Calculate dollar values
+  const signupBonusValue = calculatePointsValue(signupBonusPoints, multiplier)
+  const rewardsEarned = calculatePointsValue(rewardsPoints, multiplier)
+
+  // Annual fee (only if not waived)
+  const annualFeeImpact = card.first_year_waived ? 0 : -(card.annual_fee ?? 0)
+
+  // Net value = bonus + rewards - processing fee - annual fee
+  const netFirstYearValue = safeRound(signupBonusValue + rewardsEarned + annualFeeImpact - processingFee)
+
+  // Savings percentage based on tuition portion paid on card
+  const savingsPercentage = payOnCard > 0 ? safeRound((netFirstYearValue / payOnCard) * 100) : 0
+
+  const isTravel = partner !== 'Cash' && meta.category === 'travel'
+
+  return {
+    signupBonusValue,
+    rewardsEarned,
+    annualFeeImpact,
+    processingFee,
+    netFirstYearValue,
+    payOnCard,
+    payOnCardWithFee,
+    tuitionOnACH,
+    signupBonusPoints,
+    rewardsPoints,
+    totalPoints,
+    pointsValuation: multiplier,
+    valuationPartner: partner,
+    savingsPercentage,
+    isTravel,
   }
 }
 
@@ -290,9 +465,6 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
 // FILTERING LOGIC
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Check if card should be excluded based on AMEX history
- */
 function shouldExcludeBasedOnAmexHistory(
   meta: CardMetadata,
   amexHistoryCards: string[]
@@ -303,22 +475,15 @@ function shouldExcludeBasedOnAmexHistory(
 
   const historySet = new Set(amexHistoryCards)
 
-  // Personal Platinum history excludes both Personal Gold and Platinum
   if (historySet.has('AMEX Personal Platinum')) {
     if (meta.isPersonalPlatinum || meta.isPersonalGold) return true
   }
-
-  // Personal Gold history excludes only Personal Gold
   if (historySet.has('AMEX Personal Gold')) {
     if (meta.isPersonalGold) return true
   }
-
-  // Business Platinum history excludes both Business Gold and Platinum
   if (historySet.has('AMEX Business Platinum')) {
     if (meta.isBusinessPlatinum || meta.isBusinessGold) return true
   }
-
-  // Business Gold history excludes only Business Gold
   if (historySet.has('AMEX Business Gold')) {
     if (meta.isBusinessGold) return true
   }
@@ -326,9 +491,6 @@ function shouldExcludeBasedOnAmexHistory(
   return false
 }
 
-/**
- * Check if user already has this card
- */
 function userHasCard(meta: CardMetadata, currentCards: string[]): boolean {
   if (!currentCards.length) return false
 
@@ -347,35 +509,14 @@ function userHasCard(meta: CardMetadata, currentCards: string[]): boolean {
 }
 
 /**
- * Check if card should be excluded based on partner preferences
+ * Check if user has a Chase card that enables transfer partners
  */
-function shouldExcludeByPartnerPreference(
-  meta: CardMetadata,
-  preferredAirlines?: string[],
-  preferredHotels?: string[]
-): boolean {
-  if (meta.isFlexiblePointsCard) return false
-
-  if (meta.primaryAirline && preferredAirlines?.length) {
-    const hasSpecificPref = preferredAirlines.some(a => !a.includes('Any'))
-    if (hasSpecificPref && !preferredAirlines.some(a => a.includes(meta.primaryAirline!))) {
-      return true
-    }
-  }
-
-  if (meta.primaryHotel && preferredHotels?.length) {
-    const hasSpecificPref = preferredHotels.some(h => !h.includes('Any'))
-    if (hasSpecificPref && !preferredHotels.some(h => h.includes(meta.primaryHotel!))) {
-      return true
-    }
-  }
-
-  return false
+function checkUserHasChaseTransferCard(currentCards: string[]): boolean {
+  return currentCards.some(card =>
+    CHASE_TRANSFER_ENABLERS.some(enabler => card.toLowerCase().includes(enabler))
+  )
 }
 
-/**
- * Filter cards based on criteria
- */
 function filterCards(
   cards: CreditCard[],
   criteria: CardMatchingCriteria
@@ -384,7 +525,6 @@ function filterCards(
     ? getCreditScoreMinimum(criteria.creditScoreRange)
     : DEFAULT_CREDIT_SCORE
 
-  // Limit cards for performance
   const limitedCards = cards.slice(0, MAX_CARDS_TO_PROCESS)
 
   return limitedCards.filter(card => {
@@ -392,38 +532,28 @@ function filterCards(
 
     const meta = getCardMetadata(card)
 
-    // Credit score check
     if (card.min_credit_score && card.min_credit_score > userMinScore) {
       return false
     }
 
-    // Business card preference
     if (card.is_business_card && !criteria.openToBusinessCards) {
       return false
     }
 
-    // Already owned
     if (userHasCard(meta, criteria.currentCards)) {
       return false
     }
 
-    // Chase 5/24 rule
     if (criteria.recentCardApplications === '5+' && meta.isChase) {
       return false
     }
 
-    // AMEX history
     if (shouldExcludeBasedOnAmexHistory(meta, criteria.amexHistoryCards)) {
       return false
     }
 
-    // Spend requirement must be <= tuition
+    // Card must have a spend requirement we can meet with tuition
     if (meta.spendRequirement > criteria.tuitionAmount) {
-      return false
-    }
-
-    // Partner preferences
-    if (shouldExcludeByPartnerPreference(meta, criteria.preferredAirlines, criteria.preferredHotels)) {
       return false
     }
 
@@ -432,72 +562,9 @@ function filterCards(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SCORING
-// ═══════════════════════════════════════════════════════════════════════════
-
-/**
- * Score card based on user preferences
- */
-function scoreByPreference(
-  card: CreditCard,
-  preferredRewardsType: string,
-  preferredAirlines?: string[],
-  preferredHotels?: string[]
-): number {
-  const rewardsType = card.rewards_type?.toLowerCase() ?? ''
-  const meta = getCardMetadata(card)
-
-  switch (preferredRewardsType) {
-    case 'cash_back':
-      if (rewardsType.includes('cash')) return CATEGORY_PREFERENCE_MULTIPLIER
-      break
-    case 'travel_points': {
-      if (rewardsType.includes('travel') || rewardsType.includes('points') || rewardsType.includes('miles')) {
-        let multiplier = CATEGORY_PREFERENCE_MULTIPLIER
-
-        if (meta.primaryAirline && preferredAirlines?.some(a => a.includes(meta.primaryAirline!))) {
-          multiplier = PREFERRED_PARTNER_MULTIPLIER
-        }
-        if (meta.primaryHotel && preferredHotels?.some(h => h.includes(meta.primaryHotel!))) {
-          multiplier = PREFERRED_PARTNER_MULTIPLIER
-        }
-
-        return multiplier
-      }
-      break
-    }
-    case 'flexible': {
-      // Flexible preference: give equal boost to both cash back and travel cards
-      // Still apply partner preferences for travel cards if user specified airlines/hotels
-      if (rewardsType.includes('cash')) {
-        return CATEGORY_PREFERENCE_MULTIPLIER
-      }
-      if (rewardsType.includes('travel') || rewardsType.includes('points') || rewardsType.includes('miles')) {
-        let multiplier = CATEGORY_PREFERENCE_MULTIPLIER
-
-        if (meta.primaryAirline && preferredAirlines?.some(a => a.includes(meta.primaryAirline!))) {
-          multiplier = PREFERRED_PARTNER_MULTIPLIER
-        }
-        if (meta.primaryHotel && preferredHotels?.some(h => h.includes(meta.primaryHotel!))) {
-          multiplier = PREFERRED_PARTNER_MULTIPLIER
-        }
-
-        return multiplier
-      }
-      return 1.0
-    }
-  }
-
-  return 1.0
-}
-
-// ═══════════════════════════════════════════════════════════════════════════
 // MAIN RECOMMENDATION FUNCTION
 // ═══════════════════════════════════════════════════════════════════════════
 
-/**
- * Determine display type for card rewards
- */
 export function getRewardsDisplayType(card: CreditCard): 'cash_back' | 'travel_points' | 'airline_miles' | 'hotel_points' {
   const rewardsType = card.rewards_type?.toLowerCase() ?? ''
   if (rewardsType.includes('airline') || rewardsType.includes('miles')) return 'airline_miles'
@@ -507,8 +574,17 @@ export function getRewardsDisplayType(card: CreditCard): 'cash_back' | 'travel_p
   return 'cash_back'
 }
 
+export interface EnhancedCardRecommendation extends CardRecommendationResult {
+  breakdown: EnhancedSavingsBreakdown
+  recommendationType: 'simple' | 'maximum_value' | 'alternative'
+  label: string
+}
+
 /**
- * Calculate card recommendations
+ * Calculate card recommendations with new structure:
+ * 1. Simple & Straightforward (single best card)
+ * 2. Maximum Value (two-card split if beneficial)
+ * 3. Alternative options
  */
 export function calculateRecommendations(
   cards: CreditCard[],
@@ -517,7 +593,6 @@ export function calculateRecommendations(
   try {
     maintainCache()
 
-    // Validate criteria
     const validationResult = CardMatchingCriteriaSchema.safeParse(criteria)
     if (!validationResult.success) {
       const issues = validationResult.error.issues
@@ -530,95 +605,67 @@ export function calculateRecommendations(
       return []
     }
 
-    // Filter eligible cards
     const eligibleCards = filterCards(cards, criteria)
-
     if (eligibleCards.length === 0) {
       console.info('[card-engine] No eligible cards found')
       return []
     }
 
-    // Calculate savings for each card
-    const cardResults: CardRecommendationResult[] = eligibleCards.map(card => {
-      const breakdown = calculateSavingsBreakdown(card, criteria.tuitionAmount)
-      const preferenceMultiplier = scoreByPreference(
+    const userHasChaseTransferCard = checkUserHasChaseTransferCard(criteria.currentCards)
+
+    // Calculate enhanced savings for each card
+    const cardResults = eligibleCards.map(card => {
+      const breakdown = calculateEnhancedSavings(
         card,
+        criteria.tuitionAmount,
         criteria.preferredRewardsType,
         criteria.preferredAirlines,
-        criteria.preferredHotels
+        criteria.preferredHotels,
+        userHasChaseTransferCard
       )
-
-      const adjustedSavings = breakdown.netFirstYearValue * preferenceMultiplier
 
       return {
         card,
-        estimatedSavings: safeRound(adjustedSavings),
+        estimatedSavings: breakdown.netFirstYearValue,
         breakdown,
         rank: 0,
       }
     })
 
-    // Sort by savings descending
+    // Sort by net savings
     cardResults.sort((a, b) => b.estimatedSavings - a.estimatedSavings)
 
-    // Get top recommendations with category diversity
-    const topCards = cardResults.slice(0, 3)
+    // Get top single card (Simple & Straightforward)
+    const topCard = cardResults[0]
 
+    // Get remaining cards for alternatives
+    const remainingCards = cardResults.slice(1, 5)
+
+    // For flexible preference, ensure we have both cash back and travel options
     if (criteria.preferredRewardsType === 'flexible') {
-      // For flexible preference: ensure we have both cash back AND travel cards
-      const hasCashBack = topCards.some(r => getCardMetadata(r.card).category === 'cash_back')
-      const hasTravel = topCards.some(r => getCardMetadata(r.card).category === 'travel')
+      const topIsCashBack = getCardMetadata(topCard.card).category === 'cash_back'
+      const alternateCategory = topIsCashBack ? 'travel' : 'cash_back'
 
-      const results = [...topCards]
+      const hasAlternate = remainingCards.some(r => getCardMetadata(r.card).category === alternateCategory)
 
-      // Add best cash back if missing
-      if (!hasCashBack) {
-        const cashBackCard = cardResults.find(r => {
-          const meta = getCardMetadata(r.card)
-          const notInTop3 = !topCards.some(t => t.card.id === r.card.id)
-          return meta.category === 'cash_back' && notInTop3
-        })
-        if (cashBackCard) results.push(cashBackCard)
+      if (!hasAlternate) {
+        const alternateCard = cardResults.find(r =>
+          r.card.id !== topCard.card.id &&
+          getCardMetadata(r.card).category === alternateCategory
+        )
+        if (alternateCard && !remainingCards.includes(alternateCard)) {
+          remainingCards.push(alternateCard)
+        }
       }
-
-      // Add best travel if missing
-      if (!hasTravel) {
-        const travelCard = cardResults.find(r => {
-          const meta = getCardMetadata(r.card)
-          const notInTop3 = !topCards.some(t => t.card.id === r.card.id)
-          return meta.category === 'travel' && notInTop3
-        })
-        if (travelCard) results.push(travelCard)
-      }
-
-      // Assign ranks
-      return results.map((result, index) => ({
-        ...result,
-        rank: index + 1,
-      }))
     }
 
-    // For cash_back or travel_points preference: add alternate category card
-    const userCategory = criteria.preferredRewardsType === 'cash_back' ? 'cash_back' : 'travel'
-    const alternateCategory = userCategory === 'cash_back' ? 'travel' : 'cash_back'
+    // Build results array
+    const results: CardRecommendationResult[] = [
+      { ...topCard, rank: 1 },
+      ...remainingCards.map((r, i) => ({ ...r, rank: i + 2 }))
+    ]
 
-    // Find alternate category card if not already in top 3
-    const alternateCard = cardResults.find(r => {
-      const meta = getCardMetadata(r.card)
-      const notInTop3 = !topCards.some(t => t.card.id === r.card.id)
-      return meta.category === alternateCategory && notInTop3
-    })
-
-    const results = [...topCards]
-    if (alternateCard) {
-      results.push(alternateCard)
-    }
-
-    // Assign ranks
-    return results.map((result, index) => ({
-      ...result,
-      rank: index + 1,
-    }))
+    return results
 
   } catch (error) {
     console.error('[card-engine] Failed to calculate recommendations:', error)
@@ -630,22 +677,29 @@ export function calculateRecommendations(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// SPLIT STRATEGY
+// SPLIT STRATEGY (Maximum Value - Two Card Option)
 // ═══════════════════════════════════════════════════════════════════════════
 
 export interface SplitStrategy {
   cards: {
     card: CreditCard
     allocatedAmount: number
-    breakdown: SavingsBreakdown
+    allocatedWithFee: number
+    breakdown: EnhancedSavingsBreakdown
   }[]
   totalSavings: number
   totalTuition: number
+  totalOnCards: number
+  totalOnACH: number
   savingsPercentage: number
 }
 
 /**
- * Calculate split payment strategies for higher tuition amounts
+ * Calculate split payment strategy
+ * Key rules:
+ * - Each card only charges up to its spend requirement
+ * - Remainder goes to ACH
+ * - Cards must be from different issuers
  */
 export function calculateSplitStrategies(
   cards: CreditCard[],
@@ -654,20 +708,18 @@ export function calculateSplitStrategies(
   try {
     const tuitionAmount = criteria.tuitionAmount
 
-    // Only suggest split for larger tuition amounts
     if (tuitionAmount < MIN_TUITION_FOR_SPLIT) return null
 
-    // Get eligible cards sorted by signup bonus
     const eligibleCards = filterCards(cards, criteria)
-      .filter(card => isFinitePositive(card.signup_bonus_value))
+      .filter(card => (card.signup_bonus_value ?? 0) > 0)
       .sort((a, b) => (b.signup_bonus_value ?? 0) - (a.signup_bonus_value ?? 0))
-      .slice(0, MAX_SPLIT_CANDIDATES) // Limit for performance
+      .slice(0, MAX_SPLIT_CANDIDATES)
 
     if (eligibleCards.length < 2) return null
 
+    const userHasChaseTransferCard = checkUserHasChaseTransferCard(criteria.currentCards)
     const strategies: SplitStrategy[] = []
 
-    // Find best 2-card combinations
     for (let i = 0; i < eligibleCards.length; i++) {
       for (let j = i + 1; j < eligibleCards.length; j++) {
         const card1 = eligibleCards[i]
@@ -676,67 +728,63 @@ export function calculateSplitStrategies(
         const meta1 = getCardMetadata(card1)
         const meta2 = getCardMetadata(card2)
 
-        // One card per bank rule: cannot have two cards from the same issuer
+        // One card per bank rule
         if (meta1.issuerLower === meta2.issuerLower) continue
 
         const req1 = meta1.spendRequirement
         const req2 = meta2.spendRequirement
 
-        // Skip if combined requirements exceed tuition
-        if (req1 + req2 > tuitionAmount * 1.5) continue
+        // Both cards must have spend requirements
+        if (req1 === 0 || req2 === 0) continue
 
-        // Allocate tuition between cards
-        let allocation1 = Math.min(req1, tuitionAmount)
-        let allocation2 = tuitionAmount - allocation1
+        // Calculate allocations (each card gets up to its spend requirement)
+        const allocation1 = Math.min(req1, tuitionAmount)
+        const allocation2 = Math.min(req2, tuitionAmount - allocation1)
 
-        // Adjust if card2 needs more
-        if (allocation2 < req2 && allocation1 > req1) {
-          const excess = allocation1 - req1
-          const needed = req2 - allocation2
-          const transfer = Math.min(excess, needed)
-          allocation1 -= transfer
-          allocation2 += transfer
-        }
+        // Skip if second card can't meet its requirement
+        if (allocation2 < req2) continue
 
-        const canMeet1 = allocation1 >= req1
-        const canMeet2 = allocation2 >= req2
+        const totalOnCards = allocation1 + allocation2
+        const totalOnACH = tuitionAmount - totalOnCards
 
-        const breakdown1 = calculateSavingsBreakdown(card1, allocation1)
-        const breakdown2 = calculateSavingsBreakdown(card2, allocation2)
+        // Calculate breakdowns
+        const breakdown1 = calculateEnhancedSavings(
+          card1, allocation1, criteria.preferredRewardsType,
+          criteria.preferredAirlines, criteria.preferredHotels, userHasChaseTransferCard
+        )
+        const breakdown2 = calculateEnhancedSavings(
+          card2, allocation2, criteria.preferredRewardsType,
+          criteria.preferredAirlines, criteria.preferredHotels, userHasChaseTransferCard
+        )
 
-        const totalSavings =
-          (canMeet1 ? breakdown1.signupBonusValue : 0) +
-          (canMeet2 ? breakdown2.signupBonusValue : 0) +
-          breakdown1.rewardsEarned +
-          breakdown2.rewardsEarned +
-          breakdown1.annualFeeImpact +
-          breakdown2.annualFeeImpact -
-          breakdown1.processingFee -
-          breakdown2.processingFee
+        const totalSavings = breakdown1.netFirstYearValue + breakdown2.netFirstYearValue
 
         strategies.push({
           cards: [
             {
               card: card1,
               allocatedAmount: allocation1,
-              breakdown: canMeet1 ? breakdown1 : { ...breakdown1, signupBonusValue: 0 },
+              allocatedWithFee: breakdown1.payOnCardWithFee,
+              breakdown: breakdown1,
             },
             {
               card: card2,
               allocatedAmount: allocation2,
-              breakdown: canMeet2 ? breakdown2 : { ...breakdown2, signupBonusValue: 0 },
+              allocatedWithFee: breakdown2.payOnCardWithFee,
+              breakdown: breakdown2,
             },
           ],
           totalSavings: safeRound(totalSavings),
           totalTuition: tuitionAmount,
-          savingsPercentage: Math.round((totalSavings / tuitionAmount) * 100),
+          totalOnCards,
+          totalOnACH,
+          savingsPercentage: totalOnCards > 0 ? safeRound((totalSavings / totalOnCards) * 100) : 0,
         })
       }
     }
 
     if (strategies.length === 0) return null
 
-    // Return best strategy
     strategies.sort((a, b) => b.totalSavings - a.totalSavings)
     return strategies[0]
 
@@ -744,6 +792,74 @@ export function calculateSplitStrategies(
     console.error('[card-engine] Failed to calculate split strategies:', error)
     return null
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PARTNER VALUATIONS (for display)
+// ═══════════════════════════════════════════════════════════════════════════
+
+export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
+  if (!isValidCreditCard(card)) return []
+
+  const meta = getCardMetadata(card)
+  const valuation = POINTS_VALUATION[meta.valuationKey] || POINTS_VALUATION[meta.issuerLower]
+
+  if (!valuation) return []
+
+  const bonusPoints = card.signup_bonus_value ?? 0
+  const valuations: PartnerValuation[] = []
+
+  if (valuation.cash && valuation.cash > 0) {
+    valuations.push({
+      partner: 'Cash Back',
+      value: calculatePointsValue(bonusPoints, valuation.cash),
+      centsPerPoint: valuation.cash,
+    })
+  }
+  if (valuation.delta) {
+    valuations.push({
+      partner: 'Delta',
+      value: calculatePointsValue(bonusPoints, valuation.delta),
+      centsPerPoint: valuation.delta,
+    })
+  }
+  if (valuation.southwest) {
+    valuations.push({
+      partner: 'Southwest',
+      value: calculatePointsValue(bonusPoints, valuation.southwest),
+      centsPerPoint: valuation.southwest,
+    })
+  }
+  if (valuation.hyatt) {
+    valuations.push({
+      partner: 'Hyatt',
+      value: calculatePointsValue(bonusPoints, valuation.hyatt),
+      centsPerPoint: valuation.hyatt,
+    })
+  }
+  if (valuation.united) {
+    valuations.push({
+      partner: 'United',
+      value: calculatePointsValue(bonusPoints, valuation.united),
+      centsPerPoint: valuation.united,
+    })
+  }
+  if (valuation.marriott) {
+    valuations.push({
+      partner: 'Marriott',
+      value: calculatePointsValue(bonusPoints, valuation.marriott),
+      centsPerPoint: valuation.marriott,
+    })
+  }
+  if (valuation.aa) {
+    valuations.push({
+      partner: 'American Airlines',
+      value: calculatePointsValue(bonusPoints, valuation.aa),
+      centsPerPoint: valuation.aa,
+    })
+  }
+
+  return valuations.sort((a, b) => b.value - a.value)
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -770,35 +886,41 @@ export function generateSavingsExplanation(
   result: CardRecommendationResult,
   tuitionAmount: number
 ): string {
-  try {
-    const { breakdown, card } = result
-    const lines: string[] = []
+  const { breakdown, card } = result
+  const enhanced = breakdown as EnhancedSavingsBreakdown
+  const lines: string[] = []
 
-    if (breakdown.signupBonusValue > 0) {
-      lines.push(
-        `Signup bonus: ${formatCurrency(breakdown.signupBonusValue)} ` +
-        `(${card.signup_bonus_requirement ?? 'Meet spend requirement'})`
-      )
+  if (enhanced.payOnCard !== undefined) {
+    lines.push(`Pay on card: ${formatCurrency(enhanced.payOnCardWithFee)}`)
+    lines.push(`  (${formatCurrency(enhanced.payOnCard)} tuition + ${formatCurrency(enhanced.processingFee)} fee)`)
+
+    if (enhanced.tuitionOnACH > 0) {
+      lines.push(`Pay via ACH: ${formatCurrency(enhanced.tuitionOnACH)}`)
     }
-
-    lines.push(
-      `Rewards on ${formatCurrency(tuitionAmount)} tuition: ` +
-      `${formatCurrency(breakdown.rewardsEarned)} ` +
-      `(${card.rewards_rate ?? 1}% back)`
-    )
-
-    if (breakdown.annualFeeImpact < 0) {
-      lines.push(`Annual fee: -${formatCurrency(Math.abs(breakdown.annualFeeImpact))}`)
-    } else if (card.annual_fee && card.annual_fee > 0 && card.first_year_waived) {
-      lines.push(`Annual fee: ${formatCurrency(card.annual_fee)} (waived first year)`)
-    }
-
-    lines.push(`Processing fee (3%): -${formatCurrency(breakdown.processingFee)}`)
-    lines.push(`Net first-year value: ${formatCurrency(breakdown.netFirstYearValue)}`)
-
-    return lines.join('\n')
-  } catch (error) {
-    console.error('[card-engine] Failed to generate explanation:', error)
-    return 'Unable to generate savings explanation'
   }
+
+  if (enhanced.signupBonusValue > 0) {
+    const label = enhanced.isTravel ? 'Signup bonus (travel value)' : 'Signup bonus'
+    lines.push(`${label}: +${formatCurrency(enhanced.signupBonusValue)}`)
+  }
+
+  lines.push(`Rewards earned: +${formatCurrency(enhanced.rewardsEarned)} (${card.rewards_rate ?? 1}%)`)
+
+  if (enhanced.annualFeeImpact < 0) {
+    lines.push(`Annual fee: -${formatCurrency(Math.abs(enhanced.annualFeeImpact))}`)
+  } else if (card.annual_fee && card.annual_fee > 0 && card.first_year_waived) {
+    lines.push(`Annual fee: ${formatCurrency(card.annual_fee)} (waived Y1)`)
+  }
+
+  lines.push(`Processing fee (3%): -${formatCurrency(enhanced.processingFee)}`)
+
+  const netLabel = enhanced.isTravel ? 'Net Travel Value' : 'Net Cash Back'
+  lines.push(`${netLabel}: ${formatCurrency(enhanced.netFirstYearValue)}`)
+
+  if (enhanced.savingsPercentage !== undefined) {
+    const pctLabel = enhanced.isTravel ? '% Travel Value' : '% Savings'
+    lines.push(`${pctLabel}: ${enhanced.savingsPercentage}%`)
+  }
+
+  return lines.join('\n')
 }

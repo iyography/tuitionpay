@@ -30,11 +30,14 @@ import {
   Mail,
   CheckCircle,
   Plane,
+  Banknote,
+  Star,
+  TrendingUp,
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAssessment } from '@/hooks/use-assessment'
 import type { CardRecommendationResult } from '@/types/cards'
-import { formatCurrency, generateSavingsExplanation, getRewardsDisplayType, getPartnerValuations, type SplitStrategy } from '@/lib/matching/card-engine'
+import { formatCurrency, generateSavingsExplanation, getRewardsDisplayType, getPartnerValuations, type SplitStrategy, type EnhancedSavingsBreakdown } from '@/lib/matching/card-engine'
 
 export default function ResultsPage() {
   const router = useRouter()
@@ -137,10 +140,10 @@ export default function ResultsPage() {
     )
   }
 
-  const totalPotentialSavings = recommendations.reduce(
-    (sum, r) => sum + r.estimatedSavings,
-    0
-  ) / recommendations.length
+  // Get top recommendation's savings for display
+  const topRecommendation = recommendations[0]
+  const topSavings = topRecommendation?.estimatedSavings || 0
+  const topBreakdown = topRecommendation?.breakdown as EnhancedSavingsBreakdown | undefined
 
   return (
     <div className="container pt-28 pb-12">
@@ -171,17 +174,26 @@ export default function ResultsPage() {
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
-                  <p className="text-primary-foreground/80 text-sm">Estimated First-Year Savings*</p>
+                  <p className="text-primary-foreground/80 text-sm">
+                    Best {topBreakdown?.isTravel ? 'Travel Value' : 'Cash Back'} Option
+                  </p>
                   <p className="text-4xl font-bold">
-                    {formatCurrency(totalPotentialSavings)}
+                    {formatCurrency(topSavings)}
                   </p>
                 </div>
                 <div className="text-sm text-primary-foreground/80">
-                  <p>That&apos;s {Math.round((totalPotentialSavings / data.tuitionAmount) * 100)}% back on tuition</p>
+                  {topBreakdown?.savingsPercentage !== undefined && (
+                    <p>{topBreakdown.savingsPercentage}% {topBreakdown?.isTravel ? 'travel value' : 'savings'} on card payment</p>
+                  )}
+                  {splitStrategy && splitStrategy.totalSavings > topSavings && (
+                    <p className="mt-1 font-semibold">
+                      Or earn {formatCurrency(splitStrategy.totalSavings)} with 2 cards!
+                    </p>
+                  )}
                 </div>
               </div>
               <p className="text-xs text-primary-foreground/70 mt-4 pt-4 border-t border-primary-foreground/20">
-                *Estimated values shown are calculated after the 3% payment processing fee. Actual savings may vary slightly based on specific card terms and offers.
+                *Values shown are net of the 3% payment processing fee. {topBreakdown?.isTravel ? 'Travel valuations are estimated based on typical redemption values.' : 'Actual savings may vary slightly based on specific card terms.'}
               </p>
             </CardContent>
           </Card>
@@ -229,7 +241,7 @@ export default function ResultsPage() {
           </Alert>
         </motion.div>
 
-        {/* Split Strategy Section */}
+        {/* Split Strategy Section - Maximum Value */}
         {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0) && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -237,79 +249,95 @@ export default function ResultsPage() {
             transition={{ delay: 0.15 }}
             className="mb-8"
           >
-            <Card className="border-2 border-dashed border-primary/50 bg-gradient-to-br from-primary/5 to-primary/10">
+            <Card className="border-2 border-primary bg-gradient-to-br from-amber-50 to-orange-50">
               <CardHeader>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                    <Layers className="h-6 w-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-white">
+                    <TrendingUp className="h-6 w-6" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <CardTitle className="text-xl">Split Payment Strategy</CardTitle>
-                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500">
+                      <CardTitle className="text-xl">Maximum Value</CardTitle>
+                      <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white">
                         <Sparkles className="h-3 w-3 mr-1" />
-                        Maximum Savings
+                        2-Card Strategy
                       </Badge>
                     </div>
                     <CardDescription>
-                      Split your ${data.tuitionAmount.toLocaleString()} tuition across 2 cards for bigger rewards
+                      Split your payment across 2 cards for the highest rewards
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Split Summary */}
-                <div className="p-4 bg-primary/10 rounded-lg">
+                <div className="p-4 bg-white/80 rounded-lg border">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                     <div>
-                      <p className="text-sm text-muted-foreground">Combined First-Year Savings</p>
+                      <p className="text-sm text-muted-foreground">Total First-Year Value</p>
                       <p className="text-3xl font-bold text-primary">{formatCurrency(splitStrategy.totalSavings)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">That&apos;s {splitStrategy.savingsPercentage}% back!</p>
+                      <p className="text-sm text-muted-foreground">{splitStrategy.savingsPercentage}% return on card payments</p>
                       <p className="text-sm font-medium text-green-600">
                         +{formatCurrency(splitStrategy.totalSavings - (recommendations[0]?.estimatedSavings || 0))} more than single card
                       </p>
                     </div>
                   </div>
+                  {splitStrategy.totalOnACH > 0 && (
+                    <div className="mt-3 pt-3 border-t flex items-center gap-2 text-sm">
+                      <Banknote className="h-4 w-4 text-blue-600" />
+                      <span className="text-muted-foreground">
+                        Pay remaining <strong className="text-foreground">{formatCurrency(splitStrategy.totalOnACH)}</strong> via ACH (no fee)
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* Cards in Strategy */}
+                {/* Cards in Strategy - Enhanced breakdown */}
                 <div className="grid md:grid-cols-2 gap-4">
-                  {splitStrategy.cards.map((cardInfo, idx) => (
-                    <div key={cardInfo.card.id} className="p-4 bg-white rounded-lg border shadow-sm">
-                      <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <p className="font-semibold">{cardInfo.card.card_name}</p>
-                          <p className="text-sm text-muted-foreground">{cardInfo.card.issuer}</p>
-                        </div>
-                        <Badge variant="outline">Card {idx + 1}</Badge>
-                      </div>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Pay on this card:</span>
-                          <span className="font-medium">{formatCurrency(cardInfo.allocatedAmount)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Signup bonus:</span>
-                          <span className="font-medium text-green-600">+{formatCurrency(cardInfo.breakdown.signupBonusValue)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Rewards earned:</span>
-                          <span className="font-medium">+{formatCurrency(cardInfo.breakdown.rewardsEarned)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Processing fee (3%):</span>
-                          <span className="font-medium text-red-600">-{formatCurrency(cardInfo.breakdown.processingFee)}</span>
-                        </div>
-                        {cardInfo.card.signup_bonus_requirement && (
-                          <div className="pt-2 mt-2 border-t text-xs text-muted-foreground">
-                            Bonus requirement: {cardInfo.card.signup_bonus_requirement}
+                  {splitStrategy.cards.map((cardInfo, idx) => {
+                    const breakdown = cardInfo.breakdown as EnhancedSavingsBreakdown
+                    const isTravel = breakdown.isTravel
+                    return (
+                      <div key={cardInfo.card.id} className="p-4 bg-white rounded-lg border shadow-sm">
+                        <div className="flex items-start justify-between mb-3">
+                          <div>
+                            <p className="font-semibold">{cardInfo.card.card_name}</p>
+                            <p className="text-sm text-muted-foreground">{cardInfo.card.issuer}</p>
                           </div>
-                        )}
+                          <Badge variant="outline">Card {idx + 1}</Badge>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Pay on card:</span>
+                            <span className="font-medium">{formatCurrency(breakdown.payOnCardWithFee)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Signup bonus:</span>
+                            <span className="font-medium text-green-600">+{formatCurrency(breakdown.signupBonusValue)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Rewards earned:</span>
+                            <span className="font-medium text-green-600">+{formatCurrency(breakdown.rewardsEarned)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Processing fee (3%):</span>
+                            <span className="font-medium text-red-600">-{formatCurrency(breakdown.processingFee)}</span>
+                          </div>
+                          <div className="flex justify-between pt-2 border-t font-semibold">
+                            <span>Net {isTravel ? 'Travel Value' : 'Cash Back'}:</span>
+                            <span className="text-primary">{formatCurrency(breakdown.netFirstYearValue)}</span>
+                          </div>
+                          {cardInfo.card.signup_bonus_requirement && (
+                            <div className="pt-2 mt-1 border-t text-xs text-muted-foreground">
+                              Spend {cardInfo.card.signup_bonus_requirement} in {cardInfo.card.signup_bonus_timeframe || '3 months'}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
 
                 {/* How it works */}
@@ -318,11 +346,14 @@ export default function ResultsPage() {
                     <ChevronDown className="h-4 w-4" />
                     How split payments work
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="mt-3 p-4 bg-muted rounded-lg text-sm space-y-2">
+                  <CollapsibleContent className="mt-3 p-4 bg-white/80 rounded-lg text-sm space-y-2">
                     <p><strong>1. Apply for both cards</strong> - Most approvals take just minutes.</p>
                     <p><strong>2. Split your tuition payment</strong> - Pay {formatCurrency(splitStrategy.cards[0]?.allocatedAmount || 0)} on Card 1, {formatCurrency(splitStrategy.cards[1]?.allocatedAmount || 0)} on Card 2.</p>
-                    <p><strong>3. Earn both signup bonuses</strong> - Each payment counts toward its card&apos;s bonus requirement.</p>
-                    <p><strong>4. Maximize your rewards</strong> - Get {formatCurrency(splitStrategy.totalSavings)} total in first-year value!</p>
+                    {splitStrategy.totalOnACH > 0 && (
+                      <p><strong>3. Pay the rest via ACH</strong> - Send {formatCurrency(splitStrategy.totalOnACH)} directly to your school (no fee).</p>
+                    )}
+                    <p><strong>{splitStrategy.totalOnACH > 0 ? '4' : '3'}. Earn both signup bonuses</strong> - Each payment counts toward its card&apos;s bonus requirement.</p>
+                    <p><strong>{splitStrategy.totalOnACH > 0 ? '5' : '4'}. Maximize your rewards</strong> - Get {formatCurrency(splitStrategy.totalSavings)} total in first-year value!</p>
                   </CollapsibleContent>
                 </Collapsible>
 
@@ -346,17 +377,18 @@ export default function ResultsPage() {
           </motion.div>
         )}
 
-        {/* Single Card Recommendations */}
+        {/* Single Card Recommendations - Simple & Straightforward */}
         <div className="mb-6">
-          <h2 className="text-xl font-semibold mb-2">
-            {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)
-              ? 'Or Choose a Single Card'
-              : 'Top Card Recommendations'}
-          </h2>
+          <div className="flex items-center gap-2 mb-2">
+            <Star className="h-5 w-5 text-blue-600" />
+            <h2 className="text-xl font-semibold">
+              Simple & Straightforward
+            </h2>
+          </div>
           <p className="text-muted-foreground text-sm">
             {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)
-              ? 'If you prefer using just one card, here are your best options:'
-              : 'Based on your profile, these cards will maximize your rewards:'}
+              ? 'Prefer one card? Here\'s your best single-card option:'
+              : 'Based on your profile, this card will maximize your rewards with one simple payment:'}
           </p>
         </div>
 
@@ -367,6 +399,8 @@ export default function ResultsPage() {
             const partnerValuations = getPartnerValuations(rec.card)
             const isMilesOrPoints = displayType === 'airline_miles' || displayType === 'hotel_points'
             const isTravelPoints = displayType === 'travel_points'
+            const breakdown = rec.breakdown as EnhancedSavingsBreakdown
+            const isTravel = breakdown.isTravel
 
             return (
               <motion.div
@@ -375,7 +409,7 @@ export default function ResultsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + index * 0.1 }}
               >
-                <Card className={index === 0 ? 'border-primary shadow-lg' : ''}>
+                <Card className={index === 0 ? 'border-primary border-2 shadow-lg' : ''}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -395,13 +429,13 @@ export default function ResultsPage() {
                       </div>
                       <div className="flex gap-2">
                         {index === 0 && (
-                          <Badge className="bg-primary">Best Match</Badge>
+                          <Badge className="bg-blue-600">Best Single Card</Badge>
                         )}
                         {rec.card.is_business_card && (
                           <Badge variant="outline">Business</Badge>
                         )}
-                        {(isMilesOrPoints || isTravelPoints) && (
-                          <Badge variant="outline" className="gap-1">
+                        {isTravel && (
+                          <Badge variant="outline" className="gap-1 text-blue-700 border-blue-300">
                             <Plane className="h-3 w-3" />
                             Travel
                           </Badge>
@@ -410,31 +444,80 @@ export default function ResultsPage() {
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    {/* Key Stats */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="text-center p-3 bg-muted rounded-lg">
-                        <Gift className="h-5 w-5 mx-auto mb-1 text-primary" />
-                        <p className="text-lg font-bold">{formatCurrency(rec.breakdown.signupBonusValue)}</p>
-                        <p className="text-xs text-muted-foreground">Signup Bonus</p>
+                    {/* New Fee Breakdown Display */}
+                    <div className="p-4 bg-muted/50 rounded-lg space-y-3">
+                      {/* Pay on Card */}
+                      <div className="flex justify-between items-center">
+                        <span className="flex items-center gap-2 text-muted-foreground">
+                          <CreditCard className="h-4 w-4" />
+                          Pay on card:
+                        </span>
+                        <span className="font-semibold">{formatCurrency(breakdown.payOnCardWithFee)}</span>
                       </div>
-                      <div className="text-center p-3 bg-muted rounded-lg">
-                        <Percent className="h-5 w-5 mx-auto mb-1 text-primary" />
-                        <p className="text-lg font-bold">{rec.card.rewards_rate}%</p>
-                        <p className="text-xs text-muted-foreground">Rewards Rate</p>
+
+                      {/* ACH if applicable */}
+                      {breakdown.tuitionOnACH > 0 && (
+                        <div className="flex justify-between items-center text-blue-700 bg-blue-50 p-2 rounded -mx-2">
+                          <span className="flex items-center gap-2">
+                            <Banknote className="h-4 w-4" />
+                            Pay via ACH (no fee):
+                          </span>
+                          <span className="font-semibold">{formatCurrency(breakdown.tuitionOnACH)}</span>
+                        </div>
+                      )}
+
+                      <div className="border-t pt-3 space-y-2">
+                        {/* Signup Bonus */}
+                        <div className="flex justify-between items-center">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <Gift className="h-4 w-4" />
+                            Signup bonus:
+                          </span>
+                          <span className="font-medium text-green-600">+{formatCurrency(breakdown.signupBonusValue)}</span>
+                        </div>
+
+                        {/* Rewards Earned */}
+                        <div className="flex justify-between items-center">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <Percent className="h-4 w-4" />
+                            Rewards earned ({rec.card.rewards_rate || 1}%):
+                          </span>
+                          <span className="font-medium text-green-600">+{formatCurrency(breakdown.rewardsEarned)}</span>
+                        </div>
+
+                        {/* Processing Fee */}
+                        <div className="flex justify-between items-center">
+                          <span className="flex items-center gap-2 text-muted-foreground">
+                            <DollarSign className="h-4 w-4" />
+                            Processing fee (3%):
+                          </span>
+                          <span className="font-medium text-red-600">-{formatCurrency(breakdown.processingFee)}</span>
+                        </div>
+
+                        {/* Annual Fee if applicable */}
+                        {rec.card.annual_fee > 0 && (
+                          <div className="flex justify-between items-center">
+                            <span className="text-muted-foreground">Annual fee:</span>
+                            <span className={rec.card.first_year_waived ? 'text-muted-foreground' : 'font-medium text-red-600'}>
+                              {rec.card.first_year_waived
+                                ? `${formatCurrency(rec.card.annual_fee)} (waived Y1)`
+                                : `-${formatCurrency(rec.card.annual_fee)}`
+                              }
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      <div className="text-center p-3 bg-muted rounded-lg">
-                        <DollarSign className="h-5 w-5 mx-auto mb-1 text-primary" />
-                        <p className="text-lg font-bold">
-                          {rec.card.annual_fee === 0 ? '$0' : formatCurrency(rec.card.annual_fee)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Annual Fee {rec.card.first_year_waived && rec.card.annual_fee > 0 && '(waived Y1)'}
-                        </p>
-                      </div>
-                      <div className="text-center p-3 bg-primary/10 rounded-lg">
-                        <Calculator className="h-5 w-5 mx-auto mb-1 text-primary" />
-                        <p className="text-lg font-bold text-primary">{formatCurrency(rec.estimatedSavings)}</p>
-                        <p className="text-xs text-muted-foreground">Est. Savings*</p>
+
+                      {/* Net Value + Percentage */}
+                      <div className="border-t pt-3 space-y-1">
+                        <div className="flex justify-between items-center">
+                          <span className="font-semibold">Net {isTravel ? 'Travel Value' : 'Cash Back'}:</span>
+                          <span className="text-xl font-bold text-primary">{formatCurrency(breakdown.netFirstYearValue)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-muted-foreground">% {isTravel ? 'Travel Value' : 'Savings'}:</span>
+                          <span className="font-semibold text-primary">{breakdown.savingsPercentage}%</span>
+                        </div>
                       </div>
                     </div>
 
@@ -469,55 +552,13 @@ export default function ResultsPage() {
 
                     {/* Bonus Requirement */}
                     {rec.card.signup_bonus_requirement && (
-                      <div className="p-3 bg-muted rounded-lg text-sm">
-                        <span className="font-medium">To earn the bonus: </span>
-                        <span className="text-muted-foreground">
-                          {rec.card.signup_bonus_requirement} in {rec.card.signup_bonus_timeframe || 'the first 3 months'}
+                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
+                        <span className="font-medium text-amber-900">To earn the bonus: </span>
+                        <span className="text-amber-800">
+                          Spend {rec.card.signup_bonus_requirement} in {rec.card.signup_bonus_timeframe || 'the first 3 months'}
                         </span>
                       </div>
                     )}
-
-                    {/* How We Calculated (E - fee breakdown) */}
-                    <Collapsible>
-                      <CollapsibleTrigger className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                        <ChevronDown className="h-4 w-4" />
-                        How we calculated your savings
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="mt-3 p-4 bg-muted rounded-lg">
-                        <div className="space-y-2 text-sm">
-                          {rec.breakdown.signupBonusValue > 0 && (
-                            <div className="flex justify-between">
-                              <span>Signup Bonus</span>
-                              <span className="font-medium text-green-600">+{formatCurrency(rec.breakdown.signupBonusValue)}</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between">
-                            <span>Rewards Earned ({rec.card.rewards_rate || 1}%)</span>
-                            <span className="font-medium text-green-600">+{formatCurrency(rec.breakdown.rewardsEarned)}</span>
-                          </div>
-                          {rec.breakdown.annualFeeImpact < 0 && (
-                            <div className="flex justify-between">
-                              <span>Annual Fee</span>
-                              <span className="font-medium text-red-600">-{formatCurrency(Math.abs(rec.breakdown.annualFeeImpact))}</span>
-                            </div>
-                          )}
-                          {rec.card.annual_fee > 0 && rec.card.first_year_waived && (
-                            <div className="flex justify-between">
-                              <span>Annual Fee</span>
-                              <span className="font-medium text-muted-foreground">{formatCurrency(rec.card.annual_fee)} (waived Y1)</span>
-                            </div>
-                          )}
-                          <div className="flex justify-between">
-                            <span>Processing Fee (3%)</span>
-                            <span className="font-medium text-red-600">-{formatCurrency(rec.breakdown.processingFee)}</span>
-                          </div>
-                          <div className="flex justify-between pt-2 border-t font-semibold">
-                            <span>Net Savings</span>
-                            <span className="text-primary">{formatCurrency(rec.breakdown.netFirstYearValue)}</span>
-                          </div>
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
 
                     {/* CTA */}
                     <div className="flex flex-col sm:flex-row gap-3">
