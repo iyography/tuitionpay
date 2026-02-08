@@ -19,6 +19,7 @@ export interface PartnerValuation {
   partner: string
   value: number
   centsPerPoint: number
+  totalPoints?: number
 }
 
 export interface CardMatchingCriteria {

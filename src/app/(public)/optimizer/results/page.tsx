@@ -172,25 +172,25 @@ export default function ResultsPage() {
         >
           <Card className="bg-primary text-primary-foreground">
             <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                 <div>
-                  <p className="text-primary-foreground/80 text-sm">
-                    Best {topBreakdown?.isTravel ? 'Travel Value' : 'Cash Back'} Option
+                  <p className="text-primary-foreground/80 text-sm mb-1">
+                    Simple and Straightforward Option (1 Card)
                   </p>
                   <p className="text-4xl font-bold">
                     {formatCurrency(topSavings)}
                   </p>
                 </div>
-                <div className="text-sm text-primary-foreground/80">
-                  {topBreakdown?.savingsPercentage !== undefined && (
-                    <p>{topBreakdown.savingsPercentage}% {topBreakdown?.isTravel ? 'travel value' : 'savings'} on card payment</p>
-                  )}
-                  {splitStrategy && splitStrategy.totalSavings > topSavings && (
-                    <p className="mt-1 font-semibold">
-                      Or earn {formatCurrency(splitStrategy.totalSavings)} with 2 cards!
+                {splitStrategy && splitStrategy.totalSavings > topSavings && (
+                  <div>
+                    <p className="text-primary-foreground/80 text-sm mb-1">
+                      Maximum Value (2 Cards)
                     </p>
-                  )}
-                </div>
+                    <p className="text-4xl font-bold">
+                      {formatCurrency(splitStrategy.totalSavings)}
+                    </p>
+                  </div>
+                )}
               </div>
               <p className="text-xs text-primary-foreground/70 mt-4 pt-4 border-t border-primary-foreground/20">
                 *Values shown are net of the 3% payment processing fee. {topBreakdown?.isTravel ? 'Travel valuations are estimated based on typical redemption values.' : 'Actual savings may vary slightly based on specific card terms.'}
@@ -331,7 +331,7 @@ export default function ResultsPage() {
                           </div>
                           {cardInfo.card.signup_bonus_requirement && (
                             <div className="pt-2 mt-1 border-t text-xs text-muted-foreground">
-                              Spend {cardInfo.card.signup_bonus_requirement} in {cardInfo.card.signup_bonus_timeframe || '3 months'}
+                              {cardInfo.card.signup_bonus_requirement} in {cardInfo.card.signup_bonus_timeframe || '3 months'}
                             </div>
                           )}
                         </div>
@@ -382,13 +382,11 @@ export default function ResultsPage() {
           <div className="flex items-center gap-2 mb-2">
             <Star className="h-5 w-5 text-blue-600" />
             <h2 className="text-xl font-semibold">
-              Simple & Straightforward
+              Simple & Straightforward (1 Card)
             </h2>
           </div>
           <p className="text-muted-foreground text-sm">
-            {splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)
-              ? 'Prefer one card? Here\'s your best single-card option:'
-              : 'Based on your profile, this card will maximize your rewards with one simple payment:'}
+            Start here if you prefer simplicity. This single card will maximize your rewards with one easy payment.
           </p>
         </div>
 
@@ -516,7 +514,7 @@ export default function ResultsPage() {
                         </div>
                         <div className="flex justify-between items-center text-sm">
                           <span className="text-muted-foreground">% {isTravel ? 'Travel Value' : 'Savings'}:</span>
-                          <span className="font-semibold text-primary">{breakdown.savingsPercentage}%</span>
+                          <span className="font-semibold text-primary">{isTravel ? breakdown.fullTuitionPercentage : breakdown.savingsPercentage}%</span>
                         </div>
                       </div>
                     </div>
@@ -531,7 +529,12 @@ export default function ResultsPage() {
                         <div className="space-y-2">
                           {partnerValuations.map((v) => (
                             <div key={v.partner} className="flex justify-between items-center text-sm">
-                              <span className="text-blue-800">{v.partner}</span>
+                              <span className="text-blue-800">
+                                {v.partner}
+                                {v.totalPoints && v.totalPoints > 0 && (
+                                  <span className="text-blue-600 text-xs ml-1">({Math.round(v.totalPoints/1000)}k points)</span>
+                                )}
+                              </span>
                               <span className="font-medium text-blue-900">
                                 {formatCurrency(v.value)}
                                 {v.centsPerPoint > 0 && (

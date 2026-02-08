@@ -389,6 +389,7 @@ export interface EnhancedSavingsBreakdown extends SavingsBreakdown {
   pointsValuation: number        // Multiplier used (cents per point)
   valuationPartner: string       // Partner used for valuation
   savingsPercentage: number      // Net savings as % of tuition portion
+  fullTuitionPercentage: number  // Net savings as % of full tuition amount
   isTravel: boolean              // Whether this uses travel valuation
 }
 
@@ -439,6 +440,9 @@ function calculateEnhancedSavings(
 
   // Savings percentage based on tuition portion paid on card
   const savingsPercentage = payOnCard > 0 ? safeRound((netFirstYearValue / payOnCard) * 100) : 0
+  
+  // Full tuition percentage - travel value based on full tuition amount
+  const fullTuitionPercentage = tuitionAmount > 0 ? safeRound((netFirstYearValue / tuitionAmount) * 100) : 0
 
   const isTravel = partner !== 'Cash' && meta.category === 'travel'
 
@@ -457,6 +461,7 @@ function calculateEnhancedSavings(
     pointsValuation: multiplier,
     valuationPartner: partner,
     savingsPercentage,
+    fullTuitionPercentage,
     isTravel,
   }
 }
@@ -555,6 +560,20 @@ function filterCards(
     // Card must have a spend requirement we can meet with tuition
     if (meta.spendRequirement > criteria.tuitionAmount) {
       return false
+    }
+
+    // Cash back filtering: exclude travel-only cards that cannot be redeemed for cash
+    if (criteria.preferredRewardsType === 'cash_back') {
+      // Exclude specific branded cards that cannot be redeemed for cash back
+      if (meta.isDeltaCard || meta.isSouthwestCard || meta.isUnitedCard || meta.isAACard) {
+        return false
+      }
+      
+      // Exclude cards that have zero cash valuation (travel-only)
+      const valuation = POINTS_VALUATION[meta.valuationKey] || POINTS_VALUATION[meta.issuerLower]
+      if (valuation && valuation.cash === 0) {
+        return false
+      }
     }
 
     return true
@@ -657,6 +676,13 @@ export function calculateRecommendations(
           remainingCards.push(alternateCard)
         }
       }
+    } else if (criteria.preferredRewardsType === 'travel_points') {
+      // For travel preference, filter out pure cash back cards
+      const filteredResults = cardResults.filter(r => getCardMetadata(r.card).category === 'travel')
+      return [
+        filteredResults[0] ? { ...filteredResults[0], rank: 1 } : topCard,
+        ...filteredResults.slice(1, 5).map((r, i) => ({ ...r, rank: i + 2 }))
+      ].filter(Boolean)
     }
 
     // Build results array
@@ -814,6 +840,7 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
       partner: 'Cash Back',
       value: calculatePointsValue(bonusPoints, valuation.cash),
       centsPerPoint: valuation.cash,
+      totalPoints: bonusPoints,
     })
   }
   if (valuation.delta) {
@@ -821,6 +848,7 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
       partner: 'Delta',
       value: calculatePointsValue(bonusPoints, valuation.delta),
       centsPerPoint: valuation.delta,
+      totalPoints: bonusPoints,
     })
   }
   if (valuation.southwest) {
@@ -828,6 +856,7 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
       partner: 'Southwest',
       value: calculatePointsValue(bonusPoints, valuation.southwest),
       centsPerPoint: valuation.southwest,
+      totalPoints: bonusPoints,
     })
   }
   if (valuation.hyatt) {
@@ -835,6 +864,7 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
       partner: 'Hyatt',
       value: calculatePointsValue(bonusPoints, valuation.hyatt),
       centsPerPoint: valuation.hyatt,
+      totalPoints: bonusPoints,
     })
   }
   if (valuation.united) {
@@ -842,6 +872,7 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
       partner: 'United',
       value: calculatePointsValue(bonusPoints, valuation.united),
       centsPerPoint: valuation.united,
+      totalPoints: bonusPoints,
     })
   }
   if (valuation.marriott) {
@@ -849,6 +880,7 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
       partner: 'Marriott',
       value: calculatePointsValue(bonusPoints, valuation.marriott),
       centsPerPoint: valuation.marriott,
+      totalPoints: bonusPoints,
     })
   }
   if (valuation.aa) {
@@ -856,6 +888,7 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
       partner: 'American Airlines',
       value: calculatePointsValue(bonusPoints, valuation.aa),
       centsPerPoint: valuation.aa,
+      totalPoints: bonusPoints,
     })
   }
 
