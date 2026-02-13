@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
           .from('payments')
           .insert({
             school_id: schoolId,
-            student_id: student?.id || null,
+            student_id: student?.id,
             amount: parseFloat(tuitionAmount),
             stripe_payment_intent_id: paymentIntent.id,
             card_last_four: paymentIntent.charges.data[0]?.payment_method_details?.card?.last4,
