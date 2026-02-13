@@ -1,0 +1,19 @@
+Testing Results,,,,,
+,,,,,
+Inputs,,,,,
+Amount,# of Cards,Cards Selected,Cashback or Travel,Biz?,Result
+10000,0,none,cash,Y,"Correct - Mostly, but seems to be missing Ink Premier and Preferred"
+10000,0,none,cash,N,"Incorrect - Missing Chase Sapphire Preferred (which can be cash back, Southwest, or Hyatt)"
+10000,0,none,travel,Y,Incorrect - missing Chase Ink Premier and Preferred
+12000,0,none,travel (delta),Y,incorrect - Chase Ink Business Unlimited shows up but is not a delta card. same with chase united explorer
+15000,0,none,cash,y,"Incorrect, multicard should be wells Fargo not US Bank as second card"
+30000,0,none,cash,Y,Missing Capital One Spark 2% Cash plus
+,,,,,
+Notes:,,,,,
+"% Savings should be off full tuition amount, not the amount put on that specific card (Ex. Tuition $10,000, Card Spend is $5,000, Get $1,000 Bonus, should be 10% not 20%)",,,,,
+"Change AMEX Delta Gold Value to 90,000 points for $5,000 Spend",,,,,
+All personal missing chase sapphire preferred,,,,,
+NEED TO MAKE CLEAR BIZ CARDS IS WEHRE THE VALUE IS!,,,,,
+chase ink business premier is missing from prev card checklist,,,,,
+"Add ""(includes fee)"" after ""pay on card"" in results sections",,,,,
+"Need to remove the second ""spend"" on results screen",,,,,

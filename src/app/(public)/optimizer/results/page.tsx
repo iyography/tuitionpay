@@ -163,6 +163,22 @@ export default function ResultsPage() {
           </p>
         </motion.div>
 
+        {/* Business Cards Value Message */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mb-8"
+        >
+          <Alert className="bg-green-50 border-green-200 border-l-4 border-l-green-500">
+            <TrendingUp className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-800">
+              <strong>Pro Tip:</strong> Business credit cards typically offer the highest signup bonuses and best rewards rates. 
+              You can apply using your name as the business name and your SSN - no business license required!
+            </AlertDescription>
+          </Alert>
+        </motion.div>
+
         {/* Summary Card */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -448,7 +464,7 @@ export default function ResultsPage() {
                       <div className="flex justify-between items-center">
                         <span className="flex items-center gap-2 text-muted-foreground">
                           <CreditCard className="h-4 w-4" />
-                          Pay on card:
+                          Pay on card (includes fee):
                         </span>
                         <span className="font-semibold">{formatCurrency(breakdown.payOnCardWithFee)}</span>
                       </div>
@@ -558,7 +574,7 @@ export default function ResultsPage() {
                       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm">
                         <span className="font-medium text-amber-900">To earn the bonus: </span>
                         <span className="text-amber-800">
-                          Spend {rec.card.signup_bonus_requirement} in {rec.card.signup_bonus_timeframe || 'the first 3 months'}
+                          {rec.card.signup_bonus_requirement} in {rec.card.signup_bonus_timeframe || 'the first 3 months'}
                         </span>
                       </div>
                     )}

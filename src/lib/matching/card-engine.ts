@@ -438,11 +438,11 @@ function calculateEnhancedSavings(
   // Net value = bonus + rewards - processing fee - annual fee
   const netFirstYearValue = safeRound(signupBonusValue + rewardsEarned + annualFeeImpact - processingFee)
 
-  // Savings percentage based on tuition portion paid on card
-  const savingsPercentage = payOnCard > 0 ? safeRound((netFirstYearValue / payOnCard) * 100) : 0
+  // Savings percentage based on FULL tuition amount (not just card spend)
+  const savingsPercentage = tuitionAmount > 0 ? safeRound((netFirstYearValue / tuitionAmount) * 100) : 0
   
-  // Full tuition percentage - travel value based on full tuition amount
-  const fullTuitionPercentage = tuitionAmount > 0 ? safeRound((netFirstYearValue / tuitionAmount) * 100) : 0
+  // Full tuition percentage - same as savings percentage now
+  const fullTuitionPercentage = savingsPercentage
 
   const isTravel = partner !== 'Cash' && meta.category === 'travel'
 
@@ -572,6 +572,26 @@ function filterCards(
       // Exclude cards that have zero cash valuation (travel-only)
       const valuation = POINTS_VALUATION[meta.valuationKey] || POINTS_VALUATION[meta.issuerLower]
       if (valuation && valuation.cash === 0) {
+        return false
+      }
+    }
+
+    // Travel partner filtering: if user has specific airline/hotel preferences, 
+    // exclude branded cards that don't match their preferences
+    if (criteria.preferredAirlines?.length && criteria.preferredRewardsType === 'travel_points') {
+      const hasPreferredAirlines = criteria.preferredAirlines
+      
+      // If it's an airline-specific card, check if it matches preferences
+      if (meta.isDeltaCard && !hasPreferredAirlines.some(a => a.includes('Delta'))) {
+        return false
+      }
+      if (meta.isSouthwestCard && !hasPreferredAirlines.some(a => a.includes('Southwest'))) {
+        return false
+      }
+      if (meta.isUnitedCard && !hasPreferredAirlines.some(a => a.includes('United'))) {
+        return false
+      }
+      if (meta.isAACard && !hasPreferredAirlines.some(a => a.includes('American'))) {
         return false
       }
     }

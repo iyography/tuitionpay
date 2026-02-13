@@ -58,6 +58,13 @@ INSERT INTO credit_cards (
 ('Chase Southwest Business Premier', 'Chase', 706, 'Spend $3,000', '3 months', 149, FALSE, 2, 'points', 700, TRUE, TRUE,
  '{"southwest": 3, "rapid_rewards": 2}'::jsonb),
 
+-- Wells Fargo Business Cards
+('Wells Fargo Business Elite', 'Wells Fargo', 1000, 'Spend $5,000', '3 months', 0, FALSE, 1.5, 'cash_back', 700, TRUE, TRUE,
+ '{"all_purchases": 1.5}'::jsonb),
+
+('Wells Fargo Active Cash Business', 'Wells Fargo', 750, 'Spend $5,000', '3 months', 0, FALSE, 2, 'cash_back', 680, TRUE, TRUE,
+ '{"all_purchases": 2}'::jsonb),
+
 -- ============================================
 -- PERSONAL CARDS
 -- ============================================
@@ -74,7 +81,7 @@ INSERT INTO credit_cards (
 ('AMEX Blue Cash Everyday', 'American Express', 160, 'Spend $2,000', '3 months', 0, FALSE, 3, 'cash_back', 670, FALSE, TRUE,
  '{"groceries": 3, "gas": 2, "online": 3}'::jsonb),
 
-('AMEX Delta Gold', 'American Express', 540, 'Spend $2,000', '3 months', 0, TRUE, 2, 'miles', 680, FALSE, TRUE,
+('AMEX Delta Gold', 'American Express', 900, 'Spend $5,000', '3 months', 0, TRUE, 2, 'miles', 680, FALSE, TRUE,
  '{"delta": 2, "restaurants": 2}'::jsonb),
 
 ('Citi AAdvantage Platinum Select', 'Citi', 607, 'Spend $2,500', '3 months', 0, TRUE, 2, 'miles', 700, FALSE, TRUE,
