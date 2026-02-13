@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { SchoolSelector } from '@/components/forms/school-selector'
-import { HelcimPaymentForm } from '@/components/forms/helcim-payment-form'
+import { StripePaymentForm } from '@/components/forms/stripe-payment-form'
 import { ArrowLeft, ArrowRight, DollarSign, School, User } from 'lucide-react'
 
 type PaymentStep = 'school' | 'student' | 'amount' | 'payment'
@@ -212,12 +212,12 @@ function PayPageContent() {
                     <span>${paymentInfo.amount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Processing Fee (2.9% + $0.30)</span>
-                    <span>${(paymentInfo.amount * 0.029 + 0.30).toFixed(2)}</span>
+                    <span>Processing Fee (3%)</span>
+                    <span>${(paymentInfo.amount * 0.03).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-semibold pt-2 border-t">
                     <span>Total</span>
-                    <span>${(paymentInfo.amount + paymentInfo.amount * 0.029 + 0.30).toFixed(2)}</span>
+                    <span>${(paymentInfo.amount + paymentInfo.amount * 0.03).toFixed(2)}</span>
                   </div>
                 </div>
               )}
@@ -227,14 +227,13 @@ function PayPageContent() {
 
       case 'payment':
         return (
-          <HelcimPaymentForm
+          <StripePaymentForm
             amount={paymentInfo.amount}
             schoolId={paymentInfo.schoolId}
-            schoolName={paymentInfo.schoolName}
             studentName={paymentInfo.studentName}
             studentIdentifier={paymentInfo.studentIdentifier}
             parentEmail={paymentInfo.parentEmail}
-            onSuccess={handlePaymentSuccess}
+            onSuccess={() => handlePaymentSuccess('stripe-payment')}
             onError={handlePaymentError}
           />
         )
