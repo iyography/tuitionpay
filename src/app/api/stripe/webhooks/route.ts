@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
+import Stripe from 'stripe'
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -10,10 +11,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
-  let event
+  let event: Stripe.Event
 
   try {
-    // We'll need to add the webhook secret to environment variables
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
     if (!webhookSecret) {
       console.error('Stripe webhook secret not configured')
@@ -26,13 +26,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  const supabase = await createClient()
+  // Use service client — webhooks have no user session, so anon key RLS would block inserts
+  const supabase = await createServiceClient()
 
   try {
     switch (event.type) {
-      case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object
-        
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent
+
         // Extract metadata
         const {
           schoolId,
@@ -43,7 +44,19 @@ export async function POST(request: NextRequest) {
           processingFee,
         } = paymentIntent.metadata
 
-        // Create student record
+        // Get card last4 from the latest charge
+        let cardLastFour: string | null = null
+        if (paymentIntent.latest_charge) {
+          const charge = await stripe.charges.retrieve(
+            typeof paymentIntent.latest_charge === 'string'
+              ? paymentIntent.latest_charge
+              : paymentIntent.latest_charge.id
+          )
+          cardLastFour = charge.payment_method_details?.card?.last4 ?? null
+        }
+
+        // Create or find existing student record
+        let studentId: string
         const { data: student, error: studentError } = await supabase
           .from('students')
           .insert({
@@ -55,9 +68,26 @@ export async function POST(request: NextRequest) {
           .select()
           .single()
 
-        if (studentError && !studentError.message.includes('duplicate key')) {
-          console.error('Error creating student:', studentError)
-          break
+        if (studentError) {
+          if (studentError.message.includes('duplicate key')) {
+            // Student already exists — look them up
+            const { data: existing } = await supabase
+              .from('students')
+              .select('id')
+              .eq('school_id', schoolId)
+              .eq('parent_email', parentEmail)
+              .single()
+            if (!existing) {
+              console.error('Could not find existing student after duplicate key error')
+              break
+            }
+            studentId = existing.id
+          } else {
+            console.error('Error creating student:', studentError)
+            break
+          }
+        } else {
+          studentId = student.id
         }
 
         // Create payment record
@@ -65,13 +95,14 @@ export async function POST(request: NextRequest) {
           .from('payments')
           .insert({
             school_id: schoolId,
-            student_id: student?.id,
+            student_id: studentId,
             amount: parseFloat(tuitionAmount),
             stripe_payment_intent_id: paymentIntent.id,
-            card_last_four: paymentIntent.charges.data[0]?.payment_method_details?.card?.last4,
+            card_last_four: cardLastFour,
             processing_fee: parseFloat(processingFee),
-            revenue_share_amount: parseFloat(tuitionAmount) * 0.015, // 1.5% revenue share
+            revenue_share_amount: parseFloat(tuitionAmount) * 0.015,
             status: 'completed',
+            payment_method: 'stripe',
           })
 
         if (paymentError) {
@@ -80,9 +111,10 @@ export async function POST(request: NextRequest) {
 
         console.log('Payment succeeded:', paymentIntent.id)
         break
+      }
 
       case 'payment_intent.payment_failed':
-        console.log('Payment failed:', event.data.object.id)
+        console.error('Payment failed:', event.data.object.id)
         break
 
       default:

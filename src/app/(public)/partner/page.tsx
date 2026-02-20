@@ -159,7 +159,7 @@ export default function PartnerPage() {
                       3
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Set up your Helcim account for direct deposits
+                      Set up your account for direct deposits
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
@@ -291,7 +291,7 @@ export default function PartnerPage() {
             >
               <h2 className="text-2xl font-bold mb-3">How Payments Move</h2>
               <p className="text-muted-foreground">
-                Secure, direct processing powered by Helcim
+                Secure, direct processing powered by Stripe
               </p>
             </motion.div>
 
@@ -307,7 +307,7 @@ export default function PartnerPage() {
                 </div>
                 <h3 className="font-semibold mb-2">1. Parent Pays</h3>
                 <p className="text-sm text-muted-foreground">
-                  Parent enters card details on our secure Helcim-powered checkout
+                  Parent enters card details on our secure Stripe-powered checkout
                 </p>
               </motion.div>
 
@@ -323,9 +323,9 @@ export default function PartnerPage() {
                 <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
                   <Shield className="h-8 w-8 text-primary" />
                 </div>
-                <h3 className="font-semibold mb-2">2. Helcim Processes</h3>
+                <h3 className="font-semibold mb-2">2. Stripe Processes</h3>
                 <p className="text-sm text-muted-foreground">
-                  Helcim securely processes the payment. TuitionPay never touches the funds.
+                  Stripe securely processes the payment. TuitionPay never touches the funds.
                 </p>
                 <div className="hidden md:block absolute right-0 top-8 translate-x-1/2">
                   <ArrowDown className="h-6 w-6 text-muted-foreground rotate-[-90deg]" />
@@ -356,7 +356,7 @@ export default function PartnerPage() {
             >
               <p className="text-sm text-blue-800">
                 <strong>Key Point:</strong> TuitionPay never holds or has access to your funds.
-                All payments flow directly from parent → Helcim → school.
+                All payments flow directly from parent → Stripe → school.
               </p>
             </motion.div>
           </div>

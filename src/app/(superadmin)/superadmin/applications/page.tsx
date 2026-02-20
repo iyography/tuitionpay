@@ -107,7 +107,7 @@ export default function ApplicationsPage() {
             name: selectedApplication.school_name,
             contact_email: selectedApplication.contact_email,
             address: selectedApplication.address,
-            status: 'pending', // Will be 'active' after Helcim setup
+            status: 'pending', // Will be 'active' after Stripe setup
             revenue_share_percentage: 1.5,
           })
 

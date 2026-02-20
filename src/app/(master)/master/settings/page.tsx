@@ -239,9 +239,9 @@ export default function SettingsPage() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="p-4 border rounded-lg">
-                  <p className="font-medium">Helcim (Payment Processing)</p>
+                  <p className="font-medium">Stripe (Payment Processing)</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Status: {process.env.HELCIM_API_KEY ? 'Configured' : 'Mock Mode'}
+                    Status: {process.env.STRIPE_SECRET_KEY ? 'Configured' : 'Not Configured'}
                   </p>
                 </div>
                 <div className="p-4 border rounded-lg">

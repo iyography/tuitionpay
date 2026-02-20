@@ -134,7 +134,7 @@ export default function PaymentsPage() {
       p.amount,
       p.processing_fee || 0,
       p.status,
-      p.helcim_transaction_id || '',
+      p.stripe_payment_intent_id || '',
     ])
 
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n')

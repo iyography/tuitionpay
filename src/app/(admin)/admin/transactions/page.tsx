@@ -30,7 +30,7 @@ interface TransactionWithStudent {
   student_identifier?: string | null
   parent_email?: string
   amount: number
-  helcim_transaction_id?: string | null
+  stripe_payment_intent_id?: string | null
   card_last_four?: string | null
   processing_fee?: number | null
   status: string
@@ -90,7 +90,7 @@ export default function TransactionsPage() {
           student_identifier: studentMap.get(p.student_id)?.student_identifier || null,
           parent_email: studentMap.get(p.student_id)?.parent_email || '',
           amount: Number(p.amount),
-          helcim_transaction_id: p.helcim_transaction_id,
+          stripe_payment_intent_id: p.stripe_payment_intent_id,
           card_last_four: p.card_last_four,
           processing_fee: p.processing_fee ? Number(p.processing_fee) : null,
           status: p.status,
@@ -114,7 +114,7 @@ export default function TransactionsPage() {
           t.student_name?.toLowerCase().includes(search) ||
           t.student_identifier?.toLowerCase().includes(search) ||
           t.parent_email?.toLowerCase().includes(search) ||
-          t.helcim_transaction_id?.toLowerCase().includes(search)
+          t.stripe_payment_intent_id?.toLowerCase().includes(search)
       )
     }
 
@@ -148,7 +148,7 @@ export default function TransactionsPage() {
     const headers = ['Date', 'Transaction ID', 'Student', 'Student ID', 'Email', 'Amount', 'Fee', 'Status']
     const rows = filteredTransactions.map((t) => [
       new Date(t.created_at).toISOString(),
-      t.helcim_transaction_id || '',
+      t.stripe_payment_intent_id || '',
       t.student_name || '',
       t.student_identifier || '',
       t.parent_email || '',
@@ -311,7 +311,7 @@ export default function TransactionsPage() {
                           {formatDate(tx.created_at)}
                         </TableCell>
                         <TableCell className="font-mono text-sm">
-                          {tx.helcim_transaction_id || '-'}
+                          {tx.stripe_payment_intent_id || '-'}
                         </TableCell>
                         <TableCell className="font-medium">
                           {tx.student_name || 'N/A'}

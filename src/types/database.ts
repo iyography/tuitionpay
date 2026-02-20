@@ -14,6 +14,7 @@ export interface Database {
           id: string
           name: string
           helcim_merchant_id: string | null
+          stripe_account_id: string | null
           bank_account_info: Json | null
           contact_email: string
           address: Json | null
@@ -26,6 +27,7 @@ export interface Database {
           id?: string
           name: string
           helcim_merchant_id?: string | null
+          stripe_account_id?: string | null
           bank_account_info?: Json | null
           contact_email: string
           address?: Json | null
@@ -38,6 +40,7 @@ export interface Database {
           id?: string
           name?: string
           helcim_merchant_id?: string | null
+          stripe_account_id?: string | null
           bank_account_info?: Json | null
           contact_email?: string
           address?: Json | null
@@ -83,6 +86,8 @@ export interface Database {
           parent_id: string | null
           amount: number
           helcim_transaction_id: string | null
+          stripe_payment_intent_id: string | null
+          payment_method: string | null
           card_last_four: string | null
           processing_fee: number | null
           revenue_share_amount: number | null
@@ -97,6 +102,8 @@ export interface Database {
           parent_id?: string | null
           amount: number
           helcim_transaction_id?: string | null
+          stripe_payment_intent_id?: string | null
+          payment_method?: string | null
           card_last_four?: string | null
           processing_fee?: number | null
           revenue_share_amount?: number | null
@@ -111,6 +118,8 @@ export interface Database {
           parent_id?: string | null
           amount?: number
           helcim_transaction_id?: string | null
+          stripe_payment_intent_id?: string | null
+          payment_method?: string | null
           card_last_four?: string | null
           processing_fee?: number | null
           revenue_share_amount?: number | null

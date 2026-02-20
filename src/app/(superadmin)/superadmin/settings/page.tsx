@@ -53,12 +53,12 @@ export default function SuperAdminSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* Helcim Integration */}
+        {/* Stripe Integration */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5 text-blue-600" />
-              Helcim Integration
+              Stripe Integration
             </CardTitle>
             <CardDescription>Payment gateway configuration</CardDescription>
           </CardHeader>
@@ -66,7 +66,7 @@ export default function SuperAdminSettingsPage() {
             <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
               <div>
                 <p className="font-medium">API Status</p>
-                <p className="text-sm text-muted-foreground">Connection to Helcim</p>
+                <p className="text-sm text-muted-foreground">Connection to Stripe</p>
               </div>
               <Badge className="bg-emerald-100 text-emerald-700 border-0">
                 Connected
@@ -190,8 +190,8 @@ export default function SuperAdminSettingsPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Webhook URL</Label>
-              <Input defaultValue="https://tuitionpay.ai/api/webhooks/helcim" disabled />
-              <p className="text-xs text-muted-foreground">Configure this URL in Helcim dashboard</p>
+              <Input defaultValue="https://tuitionpay.ai/api/stripe/webhooks" disabled />
+              <p className="text-xs text-muted-foreground">Configure this URL in Stripe dashboard</p>
             </div>
             <div className="flex items-center justify-between">
               <div>

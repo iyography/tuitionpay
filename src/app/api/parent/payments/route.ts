@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
         revenue_share_amount: p.revenue_share_amount,
         status: p.status,
         card_last_four: p.card_last_four,
-        helcim_transaction_id: p.helcim_transaction_id,
+        stripe_payment_intent_id: p.stripe_payment_intent_id,
         created_at: p.created_at,
         updated_at: p.updated_at,
         student: student ? {

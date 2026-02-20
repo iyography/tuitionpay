@@ -55,6 +55,15 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Protect master routes
+  if (request.nextUrl.pathname.startsWith('/master')) {
+    if (!user) {
+      const loginUrl = new URL('/login', request.url)
+      loginUrl.searchParams.set('redirect', request.nextUrl.pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+  }
+
   // Protect parent routes
   if (request.nextUrl.pathname.startsWith('/parent')) {
     if (!user) {

@@ -30,7 +30,7 @@ interface TransactionWithStudent {
   student_name?: string
   parent_email?: string
   amount: number
-  helcim_transaction_id?: string | null
+  stripe_payment_intent_id?: string | null
   card_last_four?: string | null
   processing_fee?: number | null
   revenue_share_amount?: number | null
@@ -90,7 +90,7 @@ export default function TransactionsPage() {
           student_name: studentMap.get(p.student_id)?.student_name || 'Unknown',
           parent_email: studentMap.get(p.student_id)?.parent_email || '',
           amount: Number(p.amount),
-          helcim_transaction_id: p.helcim_transaction_id,
+          stripe_payment_intent_id: p.stripe_payment_intent_id,
           card_last_four: p.card_last_four,
           processing_fee: p.processing_fee ? Number(p.processing_fee) : null,
           revenue_share_amount: p.revenue_share_amount ? Number(p.revenue_share_amount) : null,
@@ -115,7 +115,7 @@ export default function TransactionsPage() {
           t.school_name?.toLowerCase().includes(search) ||
           t.student_name?.toLowerCase().includes(search) ||
           t.parent_email?.toLowerCase().includes(search) ||
-          t.helcim_transaction_id?.toLowerCase().includes(search)
+          t.stripe_payment_intent_id?.toLowerCase().includes(search)
       )
     }
 
@@ -149,7 +149,7 @@ export default function TransactionsPage() {
     const headers = ['Date', 'Transaction ID', 'Student', 'Email', 'Amount', 'Fee', 'Status']
     const rows = filteredTransactions.map((t) => [
       new Date(t.created_at).toISOString(),
-      t.helcim_transaction_id || '',
+      t.stripe_payment_intent_id || '',
       t.student_name || '',
       t.parent_email || '',
       t.amount,

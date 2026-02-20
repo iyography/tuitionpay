@@ -82,10 +82,10 @@ export default function SettingsPage() {
         icon: MapPin,
       },
       {
-        id: 'helcim',
-        title: 'Connect Helcim Merchant Account',
-        description: 'Set up your payment processing account',
-        completed: !!school.helcim_merchant_id,
+        id: 'stripe',
+        title: 'Connect Payment Processing',
+        description: 'Set up your Stripe payment processing account',
+        completed: !!school.stripe_account_id,
         icon: CreditCard,
       },
       {
@@ -267,21 +267,21 @@ export default function SettingsPage() {
               Payment Processing
             </CardTitle>
             <CardDescription>
-              Your Helcim merchant account details
+              Your Stripe payment processing details
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="text-sm text-muted-foreground">Merchant ID</label>
+                <label className="text-sm text-muted-foreground">Account ID</label>
                 <p className="font-mono font-medium">
-                  {school?.helcim_merchant_id || 'Not connected'}
+                  {school?.stripe_account_id || 'Not connected'}
                 </p>
               </div>
               <div>
                 <label className="text-sm text-muted-foreground">Processing Status</label>
                 <div className="mt-1">
-                  {school?.helcim_merchant_id ? (
+                  {school?.stripe_account_id ? (
                     <Badge className="bg-green-100 text-green-800">Connected</Badge>
                   ) : (
                     <Badge variant="outline">Not Connected</Badge>

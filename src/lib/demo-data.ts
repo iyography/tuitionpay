@@ -7,7 +7,7 @@ export const demoSchools = [
   {
     id: 'school-1',
     name: 'St. Mary Catholic Academy',
-    helcim_merchant_id: 'DEMO-001',
+    stripe_account_id: 'DEMO-001',
     bank_account_info: { last4: '4567' },
     contact_email: 'admin@stmary.edu',
     address: {
@@ -24,7 +24,7 @@ export const demoSchools = [
   {
     id: 'school-2',
     name: 'Grace Christian School',
-    helcim_merchant_id: 'DEMO-002',
+    stripe_account_id: 'DEMO-002',
     bank_account_info: { last4: '8901' },
     contact_email: 'payments@gracechristian.org',
     address: {
@@ -41,7 +41,7 @@ export const demoSchools = [
   {
     id: 'school-3',
     name: 'Montessori Academy of Detroit',
-    helcim_merchant_id: 'DEMO-003',
+    stripe_account_id: 'DEMO-003',
     bank_account_info: { last4: '2345' },
     contact_email: 'billing@montessoriaod.edu',
     address: {
@@ -58,7 +58,7 @@ export const demoSchools = [
   {
     id: 'school-4',
     name: 'Covenant Day School',
-    helcim_merchant_id: null,
+    stripe_account_id: null,
     bank_account_info: null,
     contact_email: 'info@covenantday.edu',
     address: {
@@ -75,7 +75,7 @@ export const demoSchools = [
   {
     id: 'school-5',
     name: 'Summit Preparatory School',
-    helcim_merchant_id: 'DEMO-005',
+    stripe_account_id: 'DEMO-005',
     bank_account_info: { last4: '6789' },
     contact_email: 'admin@summitprep.edu',
     address: {
@@ -99,7 +99,7 @@ export const demoTransactions = [
     student_name: 'Emma Johnson',
     parent_email: 'johnson.family@email.com',
     amount: 8500.00,
-    helcim_transaction_id: 'TXN-2024120101',
+    stripe_payment_intent_id: 'TXN-2024120101',
     card_last_four: '4242',
     processing_fee: 255.00,
     revenue_share_amount: 127.50,
@@ -114,7 +114,7 @@ export const demoTransactions = [
     student_name: 'Michael Chen',
     parent_email: 'chen.parents@email.com',
     amount: 12000.00,
-    helcim_transaction_id: 'TXN-2024120102',
+    stripe_payment_intent_id: 'TXN-2024120102',
     card_last_four: '1234',
     processing_fee: 360.00,
     revenue_share_amount: 180.00,
@@ -129,7 +129,7 @@ export const demoTransactions = [
     student_name: 'Sarah Williams',
     parent_email: 'williams@email.com',
     amount: 5500.00,
-    helcim_transaction_id: 'TXN-2024120501',
+    stripe_payment_intent_id: 'TXN-2024120501',
     card_last_four: '5678',
     processing_fee: 165.00,
     revenue_share_amount: 82.50,
@@ -144,7 +144,7 @@ export const demoTransactions = [
     student_name: 'David Martinez',
     parent_email: 'martinez.d@email.com',
     amount: 9800.00,
-    helcim_transaction_id: 'TXN-2024121001',
+    stripe_payment_intent_id: 'TXN-2024121001',
     card_last_four: '9012',
     processing_fee: 294.00,
     revenue_share_amount: 147.00,
@@ -159,7 +159,7 @@ export const demoTransactions = [
     student_name: 'Emily Brown',
     parent_email: 'brown.emily@email.com',
     amount: 7200.00,
-    helcim_transaction_id: null,
+    stripe_payment_intent_id: null,
     card_last_four: '3456',
     processing_fee: 216.00,
     revenue_share_amount: 108.00,
@@ -174,7 +174,7 @@ export const demoTransactions = [
     student_name: 'James Wilson',
     parent_email: 'wilson.james@email.com',
     amount: 6500.00,
-    helcim_transaction_id: null,
+    stripe_payment_intent_id: null,
     card_last_four: null,
     processing_fee: 195.00,
     revenue_share_amount: 97.50,
@@ -189,7 +189,7 @@ export const demoTransactions = [
     student_name: 'Olivia Davis',
     parent_email: 'davis.olivia@email.com',
     amount: 4200.00,
-    helcim_transaction_id: 'TXN-2024120801',
+    stripe_payment_intent_id: 'TXN-2024120801',
     card_last_four: '7890',
     processing_fee: 126.00,
     revenue_share_amount: 63.00,

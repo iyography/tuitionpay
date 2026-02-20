@@ -38,7 +38,7 @@ const faqData = [
   },
   {
     question: 'How does the payment process work?',
-    answer: 'First, use our Card Optimizer to find the best credit card for your situation. Apply for that card directly with the issuer. Once approved, return to TuitionPay, select your school, enter your payment details, and pay using your new card. Funds go directly to your school through our secure Helcim payment system.',
+    answer: 'First, use our Card Optimizer to find the best credit card for your situation. Apply for that card directly with the issuer. Once approved, return to TuitionPay, select your school, enter your payment details, and pay using your new card. Funds go directly to your school through our secure Stripe payment system.',
   },
   {
     question: 'Are there any fees for using TuitionPay?',
@@ -683,7 +683,7 @@ export default function HomePage() {
               <ul className="space-y-5">
                 {[
                   'Funds go directly to schools - we never touch the money',
-                  'PCI-compliant payment processing through Helcim',
+                  'PCI-compliant payment processing through Stripe',
                   'No hidden fees - transparent pricing always',
                   'Schools receive funds within 2-3 business days',
                 ].map((item, index) => (
@@ -750,7 +750,7 @@ export default function HomePage() {
             <div className="flex items-center gap-3">
               <Zap className="h-6 w-6 text-primary" />
               <div>
-                <p className="font-semibold text-sm">Powered by Helcim</p>
+                <p className="font-semibold text-sm">Powered by Stripe</p>
                 <p className="text-xs text-muted-foreground">Trusted payment processing</p>
               </div>
             </div>
