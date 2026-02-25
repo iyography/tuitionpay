@@ -49,6 +49,22 @@ export default function CardsManagementPage() {
     min_credit_score: '',
     is_business_card: false,
     is_active: true,
+    application_url: '',
+    point_cash_value: '',
+    cash_value: '',
+    cash_back_pct: '',
+    delta_value: '',
+    delta_pct: '',
+    marriott_value: '',
+    marriott_pct: '',
+    hyatt_value: '',
+    hyatt_pct: '',
+    southwest_value: '',
+    southwest_pct: '',
+    united_value: '',
+    united_pct: '',
+    aa_value: '',
+    aa_pct: '',
   })
 
   useEffect(() => {
@@ -105,6 +121,22 @@ export default function CardsManagementPage() {
         min_credit_score: card.min_credit_score?.toString() || '',
         is_business_card: card.is_business_card || false,
         is_active: card.is_active,
+        application_url: card.application_url || '',
+        point_cash_value: card.point_cash_value?.toString() || '',
+        cash_value: card.cash_value?.toString() || '',
+        cash_back_pct: card.cash_back_pct?.toString() || '',
+        delta_value: card.delta_value?.toString() || '',
+        delta_pct: card.delta_pct?.toString() || '',
+        marriott_value: card.marriott_value?.toString() || '',
+        marriott_pct: card.marriott_pct?.toString() || '',
+        hyatt_value: card.hyatt_value?.toString() || '',
+        hyatt_pct: card.hyatt_pct?.toString() || '',
+        southwest_value: card.southwest_value?.toString() || '',
+        southwest_pct: card.southwest_pct?.toString() || '',
+        united_value: card.united_value?.toString() || '',
+        united_pct: card.united_pct?.toString() || '',
+        aa_value: card.aa_value?.toString() || '',
+        aa_pct: card.aa_pct?.toString() || '',
       })
     } else {
       setEditingCard(null)
@@ -121,6 +153,22 @@ export default function CardsManagementPage() {
         min_credit_score: '',
         is_business_card: false,
         is_active: true,
+        application_url: '',
+        point_cash_value: '',
+        cash_value: '',
+        cash_back_pct: '',
+        delta_value: '',
+        delta_pct: '',
+        marriott_value: '',
+        marriott_pct: '',
+        hyatt_value: '',
+        hyatt_pct: '',
+        southwest_value: '',
+        southwest_pct: '',
+        united_value: '',
+        united_pct: '',
+        aa_value: '',
+        aa_pct: '',
       })
     }
     setIsDialogOpen(true)
@@ -142,6 +190,22 @@ export default function CardsManagementPage() {
       min_credit_score: formData.min_credit_score ? parseInt(formData.min_credit_score) : null,
       is_business_card: formData.is_business_card,
       is_active: formData.is_active,
+      application_url: formData.application_url || null,
+      point_cash_value: formData.point_cash_value ? parseFloat(formData.point_cash_value) : null,
+      cash_value: formData.cash_value ? parseFloat(formData.cash_value) : null,
+      cash_back_pct: formData.cash_back_pct ? parseFloat(formData.cash_back_pct) : null,
+      delta_value: formData.delta_value ? parseFloat(formData.delta_value) : null,
+      delta_pct: formData.delta_pct ? parseFloat(formData.delta_pct) : null,
+      marriott_value: formData.marriott_value ? parseFloat(formData.marriott_value) : null,
+      marriott_pct: formData.marriott_pct ? parseFloat(formData.marriott_pct) : null,
+      hyatt_value: formData.hyatt_value ? parseFloat(formData.hyatt_value) : null,
+      hyatt_pct: formData.hyatt_pct ? parseFloat(formData.hyatt_pct) : null,
+      southwest_value: formData.southwest_value ? parseFloat(formData.southwest_value) : null,
+      southwest_pct: formData.southwest_pct ? parseFloat(formData.southwest_pct) : null,
+      united_value: formData.united_value ? parseFloat(formData.united_value) : null,
+      united_pct: formData.united_pct ? parseFloat(formData.united_pct) : null,
+      aa_value: formData.aa_value ? parseFloat(formData.aa_value) : null,
+      aa_pct: formData.aa_pct ? parseFloat(formData.aa_pct) : null,
     }
 
     const { createClient } = await import('@/lib/supabase/client')
@@ -318,15 +382,69 @@ export default function CardsManagementPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="min_credit_score">Minimum Credit Score</Label>
-                <Input
-                  id="min_credit_score"
-                  type="number"
-                  value={formData.min_credit_score}
-                  onChange={(e) => setFormData({ ...formData, min_credit_score: e.target.value })}
-                  placeholder="720"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="min_credit_score">Minimum Credit Score</Label>
+                  <Input
+                    id="min_credit_score"
+                    type="number"
+                    value={formData.min_credit_score}
+                    onChange={(e) => setFormData({ ...formData, min_credit_score: e.target.value })}
+                    placeholder="720"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="application_url">Application URL</Label>
+                  <Input
+                    id="application_url"
+                    value={formData.application_url}
+                    onChange={(e) => setFormData({ ...formData, application_url: e.target.value })}
+                    placeholder="https://..."
+                  />
+                </div>
+              </div>
+
+              {/* Point Valuations Section */}
+              <div className="space-y-3 pt-4 border-t">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">Point Valuations</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="point_cash_value">Point Cash Value (cents/pt)</Label>
+                    <Input id="point_cash_value" type="number" step="0.1" value={formData.point_cash_value} onChange={(e) => setFormData({ ...formData, point_cash_value: e.target.value })} placeholder="1.0" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cash_value">Cash Value ($)</Label>
+                    <Input id="cash_value" type="number" value={formData.cash_value} onChange={(e) => setFormData({ ...formData, cash_value: e.target.value })} placeholder="750" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="delta_value" className="text-xs">Delta Value ($)</Label>
+                    <Input id="delta_value" type="number" value={formData.delta_value} onChange={(e) => setFormData({ ...formData, delta_value: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="southwest_value" className="text-xs">Southwest Value ($)</Label>
+                    <Input id="southwest_value" type="number" value={formData.southwest_value} onChange={(e) => setFormData({ ...formData, southwest_value: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="hyatt_value" className="text-xs">Hyatt Value ($)</Label>
+                    <Input id="hyatt_value" type="number" value={formData.hyatt_value} onChange={(e) => setFormData({ ...formData, hyatt_value: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="united_value" className="text-xs">United Value ($)</Label>
+                    <Input id="united_value" type="number" value={formData.united_value} onChange={(e) => setFormData({ ...formData, united_value: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="marriott_value" className="text-xs">Marriott Value ($)</Label>
+                    <Input id="marriott_value" type="number" value={formData.marriott_value} onChange={(e) => setFormData({ ...formData, marriott_value: e.target.value })} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="aa_value" className="text-xs">AA Value ($)</Label>
+                    <Input id="aa_value" type="number" value={formData.aa_value} onChange={(e) => setFormData({ ...formData, aa_value: e.target.value })} />
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-wrap gap-6">
@@ -404,6 +522,7 @@ export default function CardsManagementPage() {
                     <TableHead>Card</TableHead>
                     <TableHead>Issuer</TableHead>
                     <TableHead className="text-right">Bonus</TableHead>
+                    <TableHead>Spend Req</TableHead>
                     <TableHead className="text-right">Annual Fee</TableHead>
                     <TableHead className="text-right">Rate</TableHead>
                     <TableHead>Type</TableHead>
@@ -418,6 +537,9 @@ export default function CardsManagementPage() {
                       <TableCell>{card.issuer}</TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(card.signup_bonus_value)}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground max-w-[120px] truncate">
+                        {card.signup_bonus_requirement || '-'}
                       </TableCell>
                       <TableCell className="text-right">
                         {formatCurrency(card.annual_fee)}

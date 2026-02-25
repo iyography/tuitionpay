@@ -10,9 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress'
 import { SchoolSelector } from '@/components/forms/school-selector'
 import { StripePaymentForm } from '@/components/forms/stripe-payment-form'
-import { ArrowLeft, ArrowRight, DollarSign, School, User } from 'lucide-react'
+import { AlertCircle, ArrowLeft, ArrowRight, CheckCircle, DollarSign, School, User } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 
-type PaymentStep = 'school' | 'student' | 'amount' | 'payment'
+type PaymentStep = 'school' | 'student' | 'amount' | 'confirm' | 'payment'
 
 interface PaymentInfo {
   schoolId: string
@@ -23,13 +24,14 @@ interface PaymentInfo {
   amount: number
 }
 
-const STEPS: PaymentStep[] = ['school', 'student', 'amount', 'payment']
+const STEPS: PaymentStep[] = ['school', 'student', 'amount', 'confirm', 'payment']
 
 function PayPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [currentStep, setCurrentStep] = useState<PaymentStep>('school')
   const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [confirmAmount, setConfirmAmount] = useState('')
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
     schoolId: '',
     schoolName: '',
@@ -71,6 +73,8 @@ function PayPageContent() {
         return paymentInfo.studentName.length >= 2 && paymentInfo.parentEmail.includes('@')
       case 'amount':
         return paymentInfo.amount >= 1
+      case 'confirm':
+        return parseFloat(confirmAmount) === paymentInfo.amount
       case 'payment':
         return true
       default:
@@ -212,14 +216,76 @@ function PayPageContent() {
                     <span>${paymentInfo.amount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Processing Fee (3%)</span>
-                    <span>${(paymentInfo.amount * 0.03).toFixed(2)}</span>
+                    <span>Processing Fee (2.9%)</span>
+                    <span>${(paymentInfo.amount * 0.029).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>Platform Fee (0.1%)</span>
+                    <span>${(paymentInfo.amount * 0.001).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-semibold pt-2 border-t">
-                    <span>Total</span>
-                    <span>${(paymentInfo.amount + paymentInfo.amount * 0.03).toFixed(2)}</span>
+                    <span>Total (with 3% fee)</span>
+                    <span>${(paymentInfo.amount * 1.03).toFixed(2)}</span>
                   </div>
                 </div>
+              )}
+            </div>
+          </div>
+        )
+
+      case 'confirm':
+        return (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 mb-4">
+                <AlertCircle className="h-6 w-6 text-amber-600" />
+              </div>
+              <h2 className="text-xl font-semibold mb-2">Verify Payment Amount</h2>
+              <p className="text-muted-foreground text-sm">
+                Please confirm the amount below is correct before proceeding
+              </p>
+            </div>
+
+            <div className="p-5 bg-muted rounded-lg text-center">
+              <p className="text-sm text-muted-foreground mb-1">You are paying</p>
+              <p className="text-4xl font-bold text-primary">
+                ${paymentInfo.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">to {paymentInfo.schoolName}</p>
+              <p className="text-sm text-muted-foreground">
+                + ${(paymentInfo.amount * 0.03).toFixed(2)} processing fee = <strong>${(paymentInfo.amount * 1.03).toFixed(2)} total</strong>
+              </p>
+            </div>
+
+            <Alert className="bg-red-50 border-red-200 border-l-4 border-l-red-500">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <strong>Please double-check this amount.</strong> Refunds will not include the 3% processing fee.
+                An incorrect amount (e.g., adding an extra zero) could result in a significant non-refundable fee.
+              </AlertDescription>
+            </Alert>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmAmount">Re-type the payment amount to confirm *</Label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input
+                  id="confirmAmount"
+                  type="number"
+                  placeholder="0.00"
+                  step="0.01"
+                  value={confirmAmount}
+                  onChange={(e) => setConfirmAmount(e.target.value)}
+                  className="pl-8 text-lg"
+                />
+              </div>
+              {confirmAmount && parseFloat(confirmAmount) !== paymentInfo.amount && (
+                <p className="text-sm text-red-600">Amounts do not match. Please re-enter the correct amount.</p>
+              )}
+              {confirmAmount && parseFloat(confirmAmount) === paymentInfo.amount && (
+                <p className="text-sm text-green-600 flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" /> Amount confirmed
+                </p>
               )}
             </div>
           </div>

@@ -63,9 +63,13 @@ function PaymentForm({ clientSecret, amount, processingFee, onSuccess, onError }
               <span>Tuition Amount:</span>
               <span>${(amount - processingFee).toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span>Processing Fee (3%):</span>
-              <span>${processingFee.toFixed(2)}</span>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Processing Fee (2.9%):</span>
+              <span>${((amount - processingFee) * 0.029).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm text-muted-foreground">
+              <span>Platform Fee (0.1%):</span>
+              <span>${((amount - processingFee) * 0.001).toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold text-lg border-t pt-2 mt-2">
               <span>Total:</span>
@@ -82,10 +86,25 @@ function PaymentForm({ clientSecret, amount, processingFee, onSuccess, onError }
         </AlertDescription>
       </Alert>
 
-      <Button 
-        type="submit" 
-        disabled={!stripe || isLoading} 
-        className="w-full" 
+      <Alert className="bg-red-50 border-red-200">
+        <AlertCircle className="h-4 w-4 text-red-600" />
+        <AlertDescription className="text-red-800">
+          <strong>Verify your amount:</strong> Please review the tuition amount above to make sure it is accurate.
+          Refunds will not include the 3% processing fee, which could be substantial if the amount is incorrect.
+        </AlertDescription>
+      </Alert>
+
+      <p className="text-xs text-muted-foreground text-center">
+        By submitting this payment, you agree to our{' '}
+        <a href="/terms" target="_blank" className="underline hover:text-primary">Terms of Service</a>,{' '}
+        <a href="/privacy" target="_blank" className="underline hover:text-primary">Privacy Policy</a>, and{' '}
+        <a href="/refund-policy" target="_blank" className="underline hover:text-primary">Refund Policy</a>.
+      </p>
+
+      <Button
+        type="submit"
+        disabled={!stripe || isLoading}
+        className="w-full"
         size="lg"
       >
         {isLoading ? (

@@ -37,7 +37,7 @@ import {
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useAssessment } from '@/hooks/use-assessment'
 import type { CardRecommendationResult } from '@/types/cards'
-import { formatCurrency, generateSavingsExplanation, getRewardsDisplayType, getPartnerValuations, type SplitStrategy, type EnhancedSavingsBreakdown } from '@/lib/matching/card-engine'
+import { formatCurrency, generateSavingsExplanation, getRewardsDisplayType, getPartnerValuations, checkIsFlexiblePointsCard, type SplitStrategy, type EnhancedSavingsBreakdown } from '@/lib/matching/card-engine'
 
 export default function ResultsPage() {
   const router = useRouter()
@@ -535,39 +535,94 @@ export default function ResultsPage() {
                       </div>
                     </div>
 
-                    {/* Travel/Miles Partner Valuations (F + N) */}
-                    {(isMilesOrPoints || isTravelPoints) && partnerValuations.length > 0 && (
-                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <h4 className="font-medium text-blue-900 mb-3 flex items-center gap-2">
-                          <Plane className="h-4 w-4" />
-                          Estimated Reward Values by Partner
-                        </h4>
-                        <div className="space-y-2">
-                          {partnerValuations.map((v) => (
-                            <div key={v.partner} className="flex justify-between items-center text-sm">
-                              <span className="text-blue-800">
-                                {v.partner}
-                                {v.totalPoints && v.totalPoints > 0 && (
-                                  <span className="text-blue-600 text-xs ml-1">({Math.round(v.totalPoints/1000)}k points)</span>
-                                )}
-                              </span>
-                              <span className="font-medium text-blue-900">
-                                {formatCurrency(v.value)}
-                                {v.centsPerPoint > 0 && (
-                                  <span className="text-blue-600 text-xs ml-1">({v.centsPerPoint}c/pt)</span>
-                                )}
-                              </span>
+                    {/* Multi-Redemption Values - Show for flexible cards AND travel/miles cards */}
+                    {(() => {
+                      const isFlexible = checkIsFlexiblePointsCard(rec.card.card_name.toLowerCase(), rec.card.issuer.toLowerCase())
+                      const hasMultipleValues = partnerValuations.length > 1
+                      const showValuations = (isMilesOrPoints || isTravelPoints || isFlexible) && partnerValuations.length > 0
+
+                      if (!showValuations) return null
+
+                      const cashOption = partnerValuations.find(v => v.partner === 'Cash Back')
+                      const travelOptions = partnerValuations.filter(v => v.partner !== 'Cash Back')
+                      const bestTravel = travelOptions[0]
+
+                      return (
+                        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                          <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                            {isFlexible && hasMultipleValues ? (
+                              <>
+                                <Sparkles className="h-4 w-4" />
+                                How to Use Your Points
+                              </>
+                            ) : (
+                              <>
+                                <Plane className="h-4 w-4" />
+                                Estimated Reward Values
+                              </>
+                            )}
+                          </h4>
+
+                          {/* Cash Back Option (baseline) */}
+                          {cashOption && (
+                            <div className="mb-3 p-3 bg-white rounded-lg border border-green-200">
+                              <div className="flex justify-between items-center">
+                                <span className="flex items-center gap-2 text-green-800 font-medium">
+                                  <Banknote className="h-4 w-4" />
+                                  Cash Back (Statement Credit)
+                                </span>
+                                <span className="font-bold text-green-700 text-lg">
+                                  {formatCurrency(cashOption.value)}
+                                </span>
+                              </div>
+                              {isFlexible && hasMultipleValues && (
+                                <p className="text-xs text-green-600 mt-1">Simplest option - redeem as statement credit</p>
+                              )}
                             </div>
-                          ))}
+                          )}
+
+                          {/* Travel Transfer Options */}
+                          {travelOptions.length > 0 && (
+                            <div className="space-y-2">
+                              {isFlexible && cashOption && (
+                                <p className="text-xs font-medium text-blue-800 uppercase tracking-wide">Or transfer to travel partners for more value:</p>
+                              )}
+                              {travelOptions.map((v) => (
+                                <div key={v.partner} className="flex justify-between items-center text-sm p-2 bg-white/60 rounded">
+                                  <span className="text-blue-800">
+                                    <Plane className="h-3 w-3 inline mr-1.5" />
+                                    {v.partner}
+                                    {v.totalPoints && v.totalPoints > 0 && (
+                                      <span className="text-blue-600 text-xs ml-1">({Math.round(v.totalPoints/1000)}k pts)</span>
+                                    )}
+                                  </span>
+                                  <span className="font-semibold text-blue-900">
+                                    {formatCurrency(v.value)}
+                                    <span className="text-blue-600 text-xs ml-1">({v.centsPerPoint}c/pt)</span>
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Best value callout for flexible cards */}
+                          {isFlexible && bestTravel && cashOption && bestTravel.value > cashOption.value && (
+                            <div className="mt-3 pt-2 border-t border-blue-200">
+                              <p className="text-xs text-blue-800 font-medium">
+                                Transferring to {bestTravel.partner} gives you {formatCurrency(bestTravel.value - cashOption.value)} more value than cash back!
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Miles disclaimer */}
+                          {isMilesOrPoints && !isFlexible && (
+                            <p className="text-xs text-blue-700 mt-3 pt-2 border-t border-blue-200">
+                              Note: These miles/points cannot be redeemed for cash. Values shown are estimated travel redemption values and may vary based on availability and booking.
+                            </p>
+                          )}
                         </div>
-                        {/* Miles disclaimer (N) */}
-                        {isMilesOrPoints && (
-                          <p className="text-xs text-blue-700 mt-3 pt-2 border-t border-blue-200">
-                            Note: These miles/points cannot be redeemed for cash. Values shown are estimated travel redemption values and may vary based on availability and booking.
-                          </p>
-                        )}
-                      </div>
-                    )}
+                      )
+                    })()}
 
                     {/* Bonus Requirement */}
                     {rec.card.signup_bonus_requirement && (

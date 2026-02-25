@@ -11,15 +11,19 @@ const CreatePaymentIntentSchema = z.object({
   parentEmail: z.string().email('Invalid email format'),
 })
 
-const PROCESSING_FEE_RATE = 0.03
+const STRIPE_FEE_RATE = 0.029
+const PLATFORM_FEE_RATE = 0.001
+const TOTAL_FEE_RATE = STRIPE_FEE_RATE + PLATFORM_FEE_RATE // 3.0%
 
 function calculateAmounts(tuitionAmount: number) {
   const tuitionInCents = Math.round(tuitionAmount * 100)
-  const processingFeeInCents = Math.round(tuitionInCents * PROCESSING_FEE_RATE)
+  const totalFeeInCents = Math.round(tuitionInCents * TOTAL_FEE_RATE)
+  const platformFeeInCents = Math.round(tuitionInCents * PLATFORM_FEE_RATE)
   return {
     tuitionInCents,
-    processingFeeInCents,
-    totalInCents: tuitionInCents + processingFeeInCents,
+    processingFeeInCents: totalFeeInCents,
+    platformFeeInCents,
+    totalInCents: tuitionInCents + totalFeeInCents,
   }
 }
 
@@ -80,6 +84,7 @@ export async function POST(request: NextRequest) {
         parentEmail: input.parentEmail,
         tuitionAmount: input.amount.toString(),
         processingFee: (amounts.processingFeeInCents / 100).toString(),
+        platformFee: (amounts.platformFeeInCents / 100).toString(),
       },
       description: `Tuition payment for ${input.studentName}`,
     })

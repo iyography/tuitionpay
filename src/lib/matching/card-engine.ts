@@ -233,9 +233,15 @@ function getCardCategory(card: CreditCard): 'cash_back' | 'travel' {
 
   if (
     rewardsType.includes('cash') ||
+    rewardsType === 'cash_back' ||
     cardName.includes('cash') ||
     cardName.includes('quicksilver') ||
-    cardName.includes('double cash')
+    cardName.includes('double cash') ||
+    cardName.includes('autograph journey') ||
+    cardName.includes('active cash') ||
+    cardName.includes('signify') ||
+    cardName.includes('spark') ||
+    cardName.includes('savor')
   ) {
     return 'cash_back'
   }
@@ -257,7 +263,7 @@ function getCardPrimaryHotel(cardNameLower: string): string | null {
   return null
 }
 
-function checkIsFlexiblePointsCard(cardNameLower: string, issuerLower: string): boolean {
+export function checkIsFlexiblePointsCard(cardNameLower: string, issuerLower: string): boolean {
   return (
     cardNameLower.includes('sapphire') ||
     cardNameLower.includes('ink business preferred') ||
@@ -677,8 +683,8 @@ export function calculateRecommendations(
     // Get top single card (Simple & Straightforward)
     const topCard = cardResults[0]
 
-    // Get remaining cards for alternatives
-    const remainingCards = cardResults.slice(1, 5)
+    // Get remaining cards for alternatives (show more results so no cards are hidden)
+    const remainingCards = cardResults.slice(1, 8)
 
     // For flexible preference, ensure we have both cash back and travel options
     if (criteria.preferredRewardsType === 'flexible') {
@@ -697,12 +703,14 @@ export function calculateRecommendations(
         }
       }
     } else if (criteria.preferredRewardsType === 'travel_points') {
-      // For travel preference, filter out pure cash back cards
-      const filteredResults = cardResults.filter(r => getCardMetadata(r.card).category === 'travel')
-      return [
-        filteredResults[0] ? { ...filteredResults[0], rank: 1 } : topCard,
-        ...filteredResults.slice(1, 5).map((r, i) => ({ ...r, rank: i + 2 }))
-      ].filter(Boolean)
+      // For travel preference, prioritize travel cards but still include cash back alternatives
+      // Travel cards already score higher due to multiplier in calculateEnhancedSavings
+      const travelCards = cardResults.filter(r => getCardMetadata(r.card).category === 'travel')
+      const cashBackCards = cardResults.filter(r => getCardMetadata(r.card).category === 'cash_back')
+
+      // Build results: travel cards first, then top cash back alternatives
+      const sortedResults = [...travelCards, ...cashBackCards.slice(0, 2)]
+      return sortedResults.slice(0, 8).map((r, i) => ({ ...r, rank: i + 1 }))
     }
 
     // Build results array
