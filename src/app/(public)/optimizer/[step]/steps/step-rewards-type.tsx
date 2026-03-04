@@ -4,10 +4,10 @@ import { useEffect } from 'react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { REWARDS_PREFERENCES, AIRLINE_PARTNERS, HOTEL_PARTNERS, type RewardsPreference } from '@/types/assessment'
+import { REWARDS_PREFERENCES, AIRLINE_PARTNERS, type RewardsPreference } from '@/types/assessment'
 import type { AssessmentData } from '@/types/assessment'
 import { cn } from '@/lib/utils'
-import { Banknote, Plane, Shuffle, Building2 } from 'lucide-react'
+import { Banknote, Plane, Shuffle } from 'lucide-react'
 
 interface StepRewardsTypeProps {
   data: AssessmentData
@@ -48,14 +48,6 @@ export function StepRewardsType({ data, updateData, setCanProceed }: StepRewards
       ? current.filter(a => a !== airline)
       : [...current, airline]
     updateData({ preferredAirlines: updated })
-  }
-
-  const toggleHotel = (hotel: string) => {
-    const current = data.preferredHotels || []
-    const updated = current.includes(hotel)
-      ? current.filter(h => h !== hotel)
-      : [...current, hotel]
-    updateData({ preferredHotels: updated })
   }
 
   return (
@@ -105,9 +97,9 @@ export function StepRewardsType({ data, updateData, setCanProceed }: StepRewards
       {/* Travel Partner Preferences */}
       {showTravelPreferences && (
         <div className="space-y-6 pt-4 border-t">
-          <h3 className="font-medium text-lg">Travel Partner Preferences</h3>
+          <h3 className="font-medium text-lg">Airline Preferences</h3>
           <p className="text-sm text-muted-foreground">
-            Select your preferred airlines and hotels to help us find the best travel rewards cards for you.
+            Select your preferred airlines to help us find the best travel rewards cards for you.
           </p>
 
           {/* Airline Preferences */}
@@ -144,39 +136,6 @@ export function StepRewardsType({ data, updateData, setCanProceed }: StepRewards
             </div>
           </div>
 
-          {/* Hotel Preferences */}
-          <div className="space-y-3">
-            <Label className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Preferred Hotels
-            </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {HOTEL_PARTNERS.map((hotel) => {
-                const isSelected = data.preferredHotels?.includes(hotel)
-                return (
-                  <div
-                    key={hotel}
-                    className={cn(
-                      'flex items-center space-x-3 border rounded-lg p-3 cursor-pointer transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    )}
-                    onClick={() => toggleHotel(hotel)}
-                  >
-                    <Checkbox
-                      id={`hotel-${hotel}`}
-                      checked={isSelected}
-                      onCheckedChange={() => toggleHotel(hotel)}
-                    />
-                    <Label htmlFor={`hotel-${hotel}`} className="flex-1 cursor-pointer font-normal text-sm">
-                      {hotel}
-                    </Label>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
         </div>
       )}
     </div>

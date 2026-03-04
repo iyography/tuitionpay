@@ -59,6 +59,14 @@ const STATEMENT_CREDIT_CARDS = [
   'citi double cash',
 ]
 
+// Chase cards that are cash-only per client rules — no travel partner values shown
+// Even though they earn UR points, only Ink Business Preferred and Sapphire cards get travel value
+const CHASE_CASH_ONLY_CARDS = [
+  'chase ink business unlimited',
+  'chase ink business cash',
+  'chase ink business premier',
+]
+
 // ═══════════════════════════════════════════════════════════════════════════
 // VALIDATION SCHEMA
 // ═══════════════════════════════════════════════════════════════════════════
@@ -126,6 +134,7 @@ interface CardMetadata {
   isUnitedCard: boolean
   isAACard: boolean
   isStatementCreditCard: boolean
+  isChaseCashOnly: boolean
   valuationKey: string
 }
 
@@ -220,6 +229,7 @@ function getCardMetadata(card: CreditCard): CardMetadata {
     isUnitedCard,
     isAACard,
     isStatementCreditCard: STATEMENT_CREDIT_CARDS.some(c => cardNameLower.includes(c)),
+    isChaseCashOnly: CHASE_CASH_ONLY_CARDS.some(c => cardNameLower.includes(c)),
     valuationKey,
   }
 
@@ -296,6 +306,11 @@ function getPointsValuation(
     return { multiplier: 1, partner: 'Cash' }
   }
 
+  // Chase cash-only cards (Ink Unlimited, Cash, Premier) — always cash per client rules
+  if (meta.isChaseCashOnly) {
+    return { multiplier: valuation.cash || 1, partner: 'Cash' }
+  }
+
   // For cash back preference, use cash value
   if (preferredRewardsType === 'cash_back') {
     return { multiplier: valuation.cash || 1, partner: 'Cash' }
@@ -355,7 +370,7 @@ function getPointsValuation(
       bestMultiplier = valuation.hyatt
       bestPartner = 'Hyatt'
     }
-    if (valuation.southwest && valuation.southwest > bestMultiplier) {
+    if (valuation.southwest && valuation.southwest > bestMultiplier && (canUseChaseTransfers || meta.isSouthwestCard)) {
       bestMultiplier = valuation.southwest
       bestPartner = 'Southwest'
     }
@@ -543,9 +558,9 @@ function filterCards(
 
     const meta = getCardMetadata(card)
 
-    if (card.min_credit_score && card.min_credit_score > userMinScore) {
-      return false
-    }
+    // Credit score filter removed — the wizard no longer collects credit score
+    // (legacy field defaults to 'good'/700 which incorrectly blocks 720+ cards
+    // like Chase Sapphire Preferred). Users self-select based on their own score.
 
     if (card.is_business_card && !criteria.openToBusinessCards) {
       return false
@@ -582,23 +597,28 @@ function filterCards(
       }
     }
 
-    // Travel partner filtering: if user has specific airline/hotel preferences, 
+    // Travel partner filtering: if user has specific airline/hotel preferences,
     // exclude branded cards that don't match their preferences
     if (criteria.preferredAirlines?.length && criteria.preferredRewardsType === 'travel_points') {
-      const hasPreferredAirlines = criteria.preferredAirlines
-      
-      // If it's an airline-specific card, check if it matches preferences
-      if (meta.isDeltaCard && !hasPreferredAirlines.some(a => a.includes('Delta'))) {
-        return false
-      }
-      if (meta.isSouthwestCard && !hasPreferredAirlines.some(a => a.includes('Southwest'))) {
-        return false
-      }
-      if (meta.isUnitedCard && !hasPreferredAirlines.some(a => a.includes('United'))) {
-        return false
-      }
-      if (meta.isAACard && !hasPreferredAirlines.some(a => a.includes('American'))) {
-        return false
+      // Skip filtering if "Any / No Preference" is selected
+      const hasAnyNoPreference = criteria.preferredAirlines.some(
+        a => a.includes('Any') || a.includes('No Preference')
+      )
+
+      if (!hasAnyNoPreference) {
+        // If it's an airline-specific card, check if it matches preferences
+        if (meta.isDeltaCard && !criteria.preferredAirlines.some(a => a.includes('Delta'))) {
+          return false
+        }
+        if (meta.isSouthwestCard && !criteria.preferredAirlines.some(a => a.includes('Southwest'))) {
+          return false
+        }
+        if (meta.isUnitedCard && !criteria.preferredAirlines.some(a => a.includes('United'))) {
+          return false
+        }
+        if (meta.isAACard && !criteria.preferredAirlines.some(a => a.includes('American'))) {
+          return false
+        }
       }
     }
 
@@ -703,14 +723,9 @@ export function calculateRecommendations(
         }
       }
     } else if (criteria.preferredRewardsType === 'travel_points') {
-      // For travel preference, prioritize travel cards but still include cash back alternatives
-      // Travel cards already score higher due to multiplier in calculateEnhancedSavings
+      // For travel preference, only show travel cards — no cash back alternatives
       const travelCards = cardResults.filter(r => getCardMetadata(r.card).category === 'travel')
-      const cashBackCards = cardResults.filter(r => getCardMetadata(r.card).category === 'cash_back')
-
-      // Build results: travel cards first, then top cash back alternatives
-      const sortedResults = [...travelCards, ...cashBackCards.slice(0, 2)]
-      return sortedResults.slice(0, 8).map((r, i) => ({ ...r, rank: i + 1 }))
+      return travelCards.slice(0, 8).map((r, i) => ({ ...r, rank: i + 1 }))
     }
 
     // Build results array
@@ -862,6 +877,19 @@ export function getPartnerValuations(card: CreditCard): PartnerValuation[] {
 
   const bonusPoints = card.signup_bonus_value ?? 0
   const valuations: PartnerValuation[] = []
+
+  // Chase cash-only cards: only show cash value, no travel partners
+  if (meta.isChaseCashOnly) {
+    if (valuation.cash && valuation.cash > 0) {
+      valuations.push({
+        partner: 'Cash Back',
+        value: calculatePointsValue(bonusPoints, valuation.cash),
+        centsPerPoint: valuation.cash,
+        totalPoints: bonusPoints,
+      })
+    }
+    return valuations
+  }
 
   if (valuation.cash && valuation.cash > 0) {
     valuations.push({

@@ -441,17 +441,22 @@ export default function ResultsPage() {
                           <CardDescription>{rec.card.issuer}</CardDescription>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         {index === 0 && (
                           <Badge className="bg-blue-600">Best Single Card</Badge>
                         )}
                         {rec.card.is_business_card && (
                           <Badge variant="outline">Business</Badge>
                         )}
-                        {isTravel && (
-                          <Badge variant="outline" className="gap-1 text-blue-700 border-blue-300">
+                        {isTravel ? (
+                          <Badge className="gap-1 bg-indigo-600 text-white">
                             <Plane className="h-3 w-3" />
-                            Travel
+                            Travel Rewards
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="gap-1 text-green-700 border-green-300">
+                            <Banknote className="h-3 w-3" />
+                            Cash Back
                           </Badge>
                         )}
                       </div>
@@ -485,7 +490,7 @@ export default function ResultsPage() {
                         <div className="flex justify-between items-center">
                           <span className="flex items-center gap-2 text-muted-foreground">
                             <Gift className="h-4 w-4" />
-                            Signup bonus:
+                            Signup bonus{isTravel ? ` (${breakdown.valuationPartner} value)` : ''}:
                           </span>
                           <span className="font-medium text-green-600">+{formatCurrency(breakdown.signupBonusValue)}</span>
                         </div>
@@ -532,6 +537,11 @@ export default function ResultsPage() {
                           <span className="text-muted-foreground">% {isTravel ? 'Travel Value' : 'Savings'}:</span>
                           <span className="font-semibold text-primary">{isTravel ? breakdown.fullTuitionPercentage : breakdown.savingsPercentage}%</span>
                         </div>
+                        {isTravel && (
+                          <p className="text-xs text-indigo-600 mt-1">
+                            This is travel redemption value via {breakdown.valuationPartner} — not redeemable as cash.
+                          </p>
+                        )}
                       </div>
                     </div>
 
