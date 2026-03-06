@@ -147,6 +147,15 @@ export default function ResultsPage() {
 
   return (
     <div className="container pt-28 pb-12">
+      {/* Sticky Next Steps CTA - desktop only */}
+      <button
+        onClick={() => document.getElementById('next-steps')?.scrollIntoView({ behavior: 'smooth' })}
+        className="hidden xl:flex fixed right-8 top-1/2 -translate-y-1/2 z-40 flex-col items-center gap-2 bg-primary text-primary-foreground px-4 py-5 rounded-xl shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer group"
+      >
+        <ArrowRight className="h-5 w-5 rotate-90 group-hover:translate-y-0.5 transition-transform" />
+        <span className="text-sm font-semibold whitespace-nowrap [writing-mode:vertical-lr] rotate-180">Next Steps</span>
+      </button>
+
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <motion.div
@@ -661,6 +670,7 @@ export default function ResultsPage() {
         </div>
 
         {/* Next Steps */}
+        <div id="next-steps" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
