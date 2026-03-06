@@ -34,19 +34,19 @@ const faqData = [
   },
   {
     question: 'What credit score do I need to qualify?',
-    answer: 'Most premium rewards cards require good to excellent credit (typically 670+). Cash back cards often have more flexible requirements (620+). Our recommendation engine filters cards based on your credit score range, so you\'ll only see cards you\'re likely to be approved for. If you\'re unsure of your score, check free at Credit Karma or through your bank\'s app.',
+    answer: 'Most rewards credit cards require good to excellent credit, which typically means a FICO score of 670 or higher. Premium travel and high-value rewards cards often require scores in the 700–750+ range. If your score is below that range, you may still qualify for certain cards designed for fair credit. If you\'re unsure of your score, check for free at Credit Karma or through your bank\'s mobile app.',
   },
   {
     question: 'How does the payment process work?',
-    answer: 'First, use our Card Optimizer to find the best credit card for your situation. Apply for that card directly with the issuer. Once approved, return to TuitionPay, select your school, enter your payment details, and pay using your new card. Funds go directly to your school through our secure Stripe payment system.',
+    answer: 'First, use our Card Optimizer to find the best credit card for your situation. Apply for that card with the link provided by our AI card generator. Once approved, return to TuitionPay, select your school, enter your payment details, and pay using your new card. Funds go directly to your school through our secure Stripe payment system.',
   },
   {
     question: 'Are there any fees for using TuitionPay?',
-    answer: 'Parents pay a standard 3% credit card processing fee — the same fee charged anywhere you use a card. Even after fees, parents save 10-12% through optimized credit card rewards.',
+    answer: 'Parents pay a standard 3% credit card processing fee — the same fee charged anywhere you use a card. Even after fees, parents save an average of 12% through optimized credit card rewards.',
   },
   {
     question: 'What if my card application is declined?',
-    answer: 'You can apply for a different recommended card, or pay by ACH through your school\'s normal tuition platform.',
+    answer: 'If your application is declined, don\'t worry — approval decisions are made entirely by the issuing bank based on factors like your credit score, income, existing debt, and recent credit activity. You\'ll receive a notice explaining the reason for the decision. In some cases, you can call the issuer\'s reconsideration line to request a manual review. You may also choose to apply for a different card that better fits your credit profile or take time to improve your credit before applying again.',
   },
   {
     question: 'How long does it take for payments to reach the school?',
@@ -55,6 +55,18 @@ const faqData = [
   {
     question: 'Can I split my tuition across multiple cards?',
     answer: 'Yes! This is actually a great strategy for maximizing rewards. You can meet multiple signup bonus requirements by splitting your tuition payment across 2-3 cards. Our Card Optimizer can help you plan this strategy based on your spending capacity and the cards you qualify for.',
+  },
+  {
+    question: 'What if my tuition amount exceeds my credit limit?',
+    answer: 'First, refer to the recommended payment amount provided in your email after using the card generator tool. This ensures you know the exact amount to submit. If your tuition balance exceeds your available credit limit, you can submit multiple payments. Submit a payment through TuitionPay up to your available credit limit, then make an additional payment once you\'ve paid down your card balance. Before submitting each payment, double-check the recommended amount to avoid overpaying or underpaying. If you\'re unsure, confirm the exact balance using the amount provided in your confirmation email.',
+  },
+  {
+    question: 'Will applying for credit card(s) and utilizing TuitionPay.AI hurt my credit score?',
+    answer: 'In most cases, no — and it can actually help over time. When you apply for a credit card, the issuer performs a hard inquiry, which may cause a small, temporary dip in your score (typically just a few points). For most people, this impact is minor and short-lived. Opening a new credit card can strengthen your credit profile in the long term by increasing your total available credit and lowering your credit utilization ratio — two key factors in your credit score. Making on-time payments and keeping your balance low can further improve your score over time. Paying your balance on time and in full each month will help you build credit while avoiding interest charges.',
+  },
+  {
+    question: 'After I get approved for my card, how soon will I get the card and be able to make my tuition payment through TuitionPay\'s Online Payment Portal?',
+    answer: 'Cards typically arrive within 5–7 days. Some credit card companies offer virtual cards that allow you to start spending immediately after approval. If a virtual card is available, you can make your payment within minutes of applying. If no virtual card is available, you\'ll need to wait for the physical card to arrive before making your tuition payment through TuitionPay.',
   },
 ]
 

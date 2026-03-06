@@ -306,9 +306,32 @@ function getPointsValuation(
     return { multiplier: 1, partner: 'Cash' }
   }
 
-  // Chase cash-only cards (Ink Unlimited, Cash, Premier) — always cash per client rules
-  if (meta.isChaseCashOnly) {
+  // Chase cash-only cards (Ink Unlimited, Cash, Premier) — cash only UNLESS user has a transfer enabler
+  if (meta.isChaseCashOnly && !userHasChaseTransferCard) {
     return { multiplier: valuation.cash || 1, partner: 'Cash' }
+  }
+
+  // Branded airline/hotel cards always use their travel valuation — points can't be redeemed as cash
+  if (meta.isDeltaCard && valuation.delta) {
+    return { multiplier: valuation.delta, partner: 'Delta' }
+  }
+  if (meta.isSouthwestCard && valuation.southwest) {
+    return { multiplier: valuation.southwest, partner: 'Southwest' }
+  }
+  if (meta.isUnitedCard && valuation.united) {
+    return { multiplier: valuation.united, partner: 'United' }
+  }
+  if (meta.isAACard && valuation.aa) {
+    return { multiplier: valuation.aa, partner: 'American Airlines' }
+  }
+  if (meta.primaryHotel === 'Hyatt' && valuation.hyatt) {
+    return { multiplier: valuation.hyatt, partner: 'Hyatt' }
+  }
+  if (meta.primaryHotel === 'Marriott' && valuation.marriott) {
+    return { multiplier: valuation.marriott, partner: 'Marriott' }
+  }
+  if (meta.primaryHotel === 'Hilton' && valuation.cash) {
+    return { multiplier: valuation.cash, partner: 'Hilton' }
   }
 
   // For cash back preference, use cash value
@@ -465,7 +488,9 @@ function calculateEnhancedSavings(
   // Full tuition percentage - same as savings percentage now
   const fullTuitionPercentage = savingsPercentage
 
-  const isTravel = partner !== 'Cash' && meta.category === 'travel'
+  // Branded airline/hotel cards always show as travel — their points can't be redeemed as cash
+  const isBrandedTravelCard = meta.isDeltaCard || meta.isSouthwestCard || meta.isUnitedCard || meta.isAACard || !!meta.primaryHotel
+  const isTravel = isBrandedTravelCard || (partner !== 'Cash' && meta.category === 'travel')
 
   return {
     signupBonusValue,

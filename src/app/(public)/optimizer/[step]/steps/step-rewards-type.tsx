@@ -2,9 +2,8 @@
 
 import { useEffect } from 'react'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
-import { REWARDS_PREFERENCES, AIRLINE_PARTNERS, type RewardsPreference } from '@/types/assessment'
+import { REWARDS_PREFERENCES, type RewardsPreference } from '@/types/assessment'
 import type { AssessmentData } from '@/types/assessment'
 import { cn } from '@/lib/utils'
 import { Banknote, Plane, Shuffle } from 'lucide-react'
@@ -28,8 +27,6 @@ const REWARD_DESCRIPTIONS = {
 }
 
 export function StepRewardsType({ data, updateData, setCanProceed }: StepRewardsTypeProps) {
-  const showTravelPreferences = data.preferredRewardsType === 'travel_points' || data.preferredRewardsType === 'flexible'
-
   useEffect(() => {
     setCanProceed(!!data.preferredRewardsType)
   }, [data.preferredRewardsType, setCanProceed])
@@ -37,17 +34,10 @@ export function StepRewardsType({ data, updateData, setCanProceed }: StepRewards
   const handleChange = (value: RewardsPreference) => {
     updateData({
       preferredRewardsType: value,
-      // Clear travel preferences if not travel/flexible
-      ...(value !== 'travel_points' && value !== 'flexible' ? { preferredAirlines: [], preferredHotels: [] } : {})
+      // Always clear airline/hotel preferences — these are no longer collected
+      preferredAirlines: [],
+      preferredHotels: [],
     })
-  }
-
-  const toggleAirline = (airline: string) => {
-    const current = data.preferredAirlines || []
-    const updated = current.includes(airline)
-      ? current.filter(a => a !== airline)
-      : [...current, airline]
-    updateData({ preferredAirlines: updated })
   }
 
   return (
@@ -93,51 +83,6 @@ export function StepRewardsType({ data, updateData, setCanProceed }: StepRewards
           }
         )}
       </RadioGroup>
-
-      {/* Travel Partner Preferences */}
-      {showTravelPreferences && (
-        <div className="space-y-6 pt-4 border-t">
-          <h3 className="font-medium text-lg">Airline Preferences</h3>
-          <p className="text-sm text-muted-foreground">
-            Select your preferred airlines to help us find the best travel rewards cards for you.
-          </p>
-
-          {/* Airline Preferences */}
-          <div className="space-y-3">
-            <Label className="flex items-center gap-2">
-              <Plane className="h-4 w-4" />
-              Preferred Airlines
-            </Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {AIRLINE_PARTNERS.map((airline) => {
-                const isSelected = data.preferredAirlines?.includes(airline)
-                return (
-                  <div
-                    key={airline}
-                    className={cn(
-                      'flex items-center space-x-3 border rounded-lg p-3 cursor-pointer transition-colors',
-                      isSelected
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    )}
-                    onClick={() => toggleAirline(airline)}
-                  >
-                    <Checkbox
-                      id={`airline-${airline}`}
-                      checked={isSelected}
-                      onCheckedChange={() => toggleAirline(airline)}
-                    />
-                    <Label htmlFor={`airline-${airline}`} className="flex-1 cursor-pointer font-normal text-sm">
-                      {airline}
-                    </Label>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-        </div>
-      )}
     </div>
   )
 }
