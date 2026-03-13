@@ -172,21 +172,6 @@ export default function ResultsPage() {
           </p>
         </motion.div>
 
-        {/* Business Cards Value Message */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.05 }}
-          className="mb-8"
-        >
-          <Alert className="bg-green-50 border-green-200 border-l-4 border-l-green-500">
-            <TrendingUp className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
-              <strong>Pro Tip:</strong> Business credit cards typically offer the highest signup bonuses and best rewards rates. 
-              You can apply using your name as the business name and your SSN - no business license required!
-            </AlertDescription>
-          </Alert>
-        </motion.div>
 
         {/* Summary Card */}
         <motion.div
@@ -313,7 +298,7 @@ export default function ResultsPage() {
                     <div className="mt-3 pt-3 border-t flex items-center gap-2 text-sm">
                       <Banknote className="h-4 w-4 text-blue-600" />
                       <span className="text-muted-foreground">
-                        Pay remaining <strong className="text-foreground">{formatCurrency(splitStrategy.totalOnACH)}</strong> via ACH (no fee)
+                        Pay remaining <strong className="text-foreground">{formatCurrency(splitStrategy.totalOnACH)}</strong> through your traditional tuition system (no fee)
                       </span>
                     </div>
                   )}
@@ -375,7 +360,7 @@ export default function ResultsPage() {
                     <p><strong>1. Apply for both cards</strong> - Most approvals take just minutes.</p>
                     <p><strong>2. Split your tuition payment</strong> - Pay {formatCurrency(splitStrategy.cards[0]?.allocatedAmount || 0)} on Card 1, {formatCurrency(splitStrategy.cards[1]?.allocatedAmount || 0)} on Card 2.</p>
                     {splitStrategy.totalOnACH > 0 && (
-                      <p><strong>3. Pay the rest via ACH</strong> - Send {formatCurrency(splitStrategy.totalOnACH)} directly to your school (no fee).</p>
+                      <p><strong>3. Pay the remainder</strong> - Send {formatCurrency(splitStrategy.totalOnACH)} through your traditional tuition system (no fee).</p>
                     )}
                     <p><strong>{splitStrategy.totalOnACH > 0 ? '4' : '3'}. Earn both signup bonuses</strong> - Each payment counts toward its card&apos;s bonus requirement.</p>
                     <p><strong>{splitStrategy.totalOnACH > 0 ? '5' : '4'}. Maximize your rewards</strong> - Get {formatCurrency(splitStrategy.totalSavings)} total in first-year value!</p>
@@ -488,7 +473,7 @@ export default function ResultsPage() {
                         <div className="flex justify-between items-center text-blue-700 bg-blue-50 p-2 rounded -mx-2">
                           <span className="flex items-center gap-2">
                             <Banknote className="h-4 w-4" />
-                            Pay via ACH (no fee):
+                            Pay through your traditional tuition system (no fee):
                           </span>
                           <span className="font-semibold">{formatCurrency(breakdown.tuitionOnACH)}</span>
                         </div>

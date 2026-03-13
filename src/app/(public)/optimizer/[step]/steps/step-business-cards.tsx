@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import type { AssessmentData } from '@/types/assessment'
 import { cn } from '@/lib/utils'
-import { Briefcase, User, Lightbulb, CheckCircle2 } from 'lucide-react'
+import { Briefcase, User, Lightbulb, CheckCircle2, TrendingUp } from 'lucide-react'
 
 interface StepBusinessCardsProps {
   data: AssessmentData
@@ -84,6 +84,14 @@ export function StepBusinessCards({ data, updateData, setCanProceed }: StepBusin
           </div>
         </div>
       </RadioGroup>
+
+      <Alert className="bg-green-50 border-green-200 border-l-4 border-l-green-500">
+        <TrendingUp className="h-4 w-4 text-green-600" />
+        <AlertDescription className="text-green-800">
+          <strong>Pro Tip:</strong> Business credit cards typically offer the highest signup bonuses and best rewards rates.
+          You can apply using your name as the business name and your SSN - no business license required!
+        </AlertDescription>
+      </Alert>
 
       <Alert className="bg-amber-50 border-amber-200">
         <Lightbulb className="h-4 w-4 text-amber-600" />

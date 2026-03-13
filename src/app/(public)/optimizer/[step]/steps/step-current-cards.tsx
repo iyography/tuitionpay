@@ -54,6 +54,7 @@ const CARDS_BY_ISSUER: Record<string, string[]> = {
     'Capital One Savor',
     'Capital One SavorOne',
     'Capital One Quicksilver',
+    'Capital One Spark 2% Cash Plus',
     'Capital One Spark Cash Plus',
     'Capital One Spark Miles',
   ],
