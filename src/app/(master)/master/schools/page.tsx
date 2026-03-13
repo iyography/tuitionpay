@@ -21,6 +21,7 @@ import {
   Mail,
   DollarSign,
   Users,
+  CreditCard,
 } from 'lucide-react'
 import type { School } from '@/types/database'
 
@@ -166,6 +167,7 @@ export default function SchoolsPage() {
                   <TableRow>
                     <TableHead>School</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Stripe</TableHead>
                     <TableHead>Contact</TableHead>
                     <TableHead className="text-right">Revenue</TableHead>
                     <TableHead className="text-right">Payments</TableHead>
@@ -178,6 +180,24 @@ export default function SchoolsPage() {
                     <TableRow key={school.id}>
                       <TableCell className="font-medium">{school.name}</TableCell>
                       <TableCell>{getStatusBadge(school.status)}</TableCell>
+                      <TableCell>
+                        {!school.stripe_account_id ? (
+                          <Badge variant="destructive" className="gap-1">
+                            <CreditCard className="h-3 w-3" />
+                            Not Connected
+                          </Badge>
+                        ) : school.status === 'pending' ? (
+                          <Badge className="bg-amber-100 text-amber-800 gap-1">
+                            <CreditCard className="h-3 w-3" />
+                            Onboarding
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-green-100 text-green-800 gap-1">
+                            <CreditCard className="h-3 w-3" />
+                            Connected
+                          </Badge>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <a href={`mailto:${school.contact_email}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
                           <Mail className="h-3 w-3" />

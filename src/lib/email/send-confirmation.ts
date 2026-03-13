@@ -60,8 +60,9 @@ export async function sendPaymentConfirmation(params: PaymentConfirmationParams)
             <title>Payment Confirmation</title>
           </head>
           <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <div style="background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
               <h1 style="color: white; margin: 0; font-size: 24px;">Payment Confirmed</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">TuitionPay.ai</p>
             </div>
 
             <div style="background: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none;">

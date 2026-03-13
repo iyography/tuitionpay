@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import {
   School,
   CheckCircle,
@@ -34,6 +35,7 @@ import {
   DollarSign,
   Loader2,
   Building,
+  Info,
 } from 'lucide-react'
 import type { SchoolApplication } from '@/types/database'
 
@@ -52,6 +54,7 @@ export default function ApplicationsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [selectedApplication, setSelectedApplication] = useState<ApplicationWithAddress | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [approvalMessage, setApprovalMessage] = useState<string | null>(null)
 
   useEffect(() => {
     fetchApplications()
@@ -101,7 +104,7 @@ export default function ApplicationsPage() {
 
       // If approved, create the school record
       if (status === 'approved' && selectedApplication) {
-        const { error: schoolError } = await supabase
+        const { data: schoolData, error: schoolError } = await supabase
           .from('schools')
           .insert({
             name: selectedApplication.school_name,
@@ -110,9 +113,33 @@ export default function ApplicationsPage() {
             status: 'pending', // Will be 'active' after Stripe setup
             revenue_share_percentage: 1.5,
           })
+          .select('id')
+          .single()
 
         if (schoolError) {
           console.error('Error creating school:', schoolError)
+        } else {
+          // Try to create a Stripe Connect account for the school
+          try {
+            const res = await fetch('/api/stripe/connect/create-account', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ schoolId: schoolData.id }),
+            })
+            if (res.ok) {
+              setApprovalMessage(
+                `School "${selectedApplication.school_name}" has been approved and a Stripe account has been initiated. The school will need to complete Stripe onboarding at /admin/stripe-setup.`
+              )
+            } else {
+              setApprovalMessage(
+                `School "${selectedApplication.school_name}" has been approved. The school will need to complete Stripe onboarding at /admin/stripe-setup.`
+              )
+            }
+          } catch {
+            setApprovalMessage(
+              `School "${selectedApplication.school_name}" has been approved. The school will need to complete Stripe onboarding at /admin/stripe-setup.`
+            )
+          }
         }
       }
 
@@ -184,6 +211,14 @@ export default function ApplicationsPage() {
           </Badge>
         )}
       </div>
+
+      {approvalMessage && (
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertTitle>School Approved</AlertTitle>
+          <AlertDescription>{approvalMessage}</AlertDescription>
+        </Alert>
+      )}
 
       {applications.length === 0 ? (
         <Card>

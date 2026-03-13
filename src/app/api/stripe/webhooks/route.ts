@@ -57,6 +57,10 @@ export async function POST(request: NextRequest) {
         break
       }
 
+      case 'account.updated':
+        await handleAccountUpdated(event.data.object as Stripe.Account, supabase)
+        break
+
       default:
         console.log('Unhandled event type:', event.type)
     }
@@ -188,5 +192,47 @@ async function createPaymentRecord({
 
   if (error) {
     throw new Error(`Failed to create payment record: ${error.message}`)
+  }
+}
+
+async function handleAccountUpdated(
+  account: Stripe.Account,
+  supabase: SupabaseServiceClient
+) {
+  // Only act when charges become enabled (onboarding complete)
+  if (!account.charges_enabled) {
+    return
+  }
+
+  // Find the school with this Stripe account ID
+  const { data: school, error: findError } = await supabase
+    .from('schools')
+    .select('id, status')
+    .eq('stripe_account_id', account.id)
+    .single()
+
+  if (findError || !school) {
+    console.error('Could not find school for Stripe account:', {
+      stripeAccountId: account.id,
+      error: findError?.message,
+    })
+    return
+  }
+
+  // Activate the school if it's not already active
+  if (school.status !== 'active') {
+    const { error: updateError } = await supabase
+      .from('schools')
+      .update({ status: 'active' })
+      .eq('id', school.id)
+
+    if (updateError) {
+      throw new Error(`Failed to activate school: ${updateError.message}`)
+    }
+
+    console.log('School activated via Stripe Connect onboarding:', {
+      schoolId: school.id,
+      stripeAccountId: account.id,
+    })
   }
 }

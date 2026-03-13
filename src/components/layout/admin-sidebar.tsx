@@ -19,10 +19,11 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
-// School admin only sees Dashboard, Transactions, and Settings
+// School admin only sees Dashboard, Transactions, Stripe Setup, and Settings
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/transactions', label: 'Transactions', icon: Receipt },
+  { href: '/admin/stripe-setup', label: 'Stripe Setup', icon: CreditCard },
   { href: '/admin/settings', label: 'Settings', icon: Settings },
 ]
 

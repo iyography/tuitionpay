@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient()
     const { data: school, error: schoolError } = await supabase
       .from('schools')
-      .select('id, status')
+      .select('id, status, stripe_account_id')
       .eq('id', input.schoolId)
       .single()
 
@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
 
     const amounts = calculateAmounts(input.amount)
 
-    const paymentIntent = await stripe.paymentIntents.create({
+    // Build payment intent params
+    const paymentIntentParams: Parameters<typeof stripe.paymentIntents.create>[0] = {
       amount: amounts.totalInCents,
       currency: 'usd',
       automatic_payment_methods: { enabled: true },
@@ -87,7 +88,18 @@ export async function POST(request: NextRequest) {
         platformFee: (amounts.platformFeeInCents / 100).toString(),
       },
       description: `Tuition payment for ${input.studentName}`,
-    })
+    }
+
+    // If the school has a connected Stripe account, route funds via Connect
+    if (school.stripe_account_id) {
+      const applicationFeeAmount = Math.round(amounts.totalInCents * 0.015)
+      paymentIntentParams.application_fee_amount = applicationFeeAmount
+      paymentIntentParams.transfer_data = {
+        destination: school.stripe_account_id,
+      }
+    }
+
+    const paymentIntent = await stripe.paymentIntents.create(paymentIntentParams)
 
     return NextResponse.json({
       clientSecret: paymentIntent.client_secret,

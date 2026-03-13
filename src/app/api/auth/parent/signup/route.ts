@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { sendWelcomeEmail } from '@/lib/email/send-welcome'
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,6 +79,16 @@ export async function POST(request: NextRequest) {
         console.error('Student linking error:', linkError)
         // Non-critical error, students can be linked later
       }
+    }
+
+    // Send welcome email (non-blocking)
+    try {
+      await sendWelcomeEmail({
+        to: email,
+        parentName: fullName || '',
+      })
+    } catch (emailError) {
+      console.error('Welcome email error:', emailError)
     }
 
     return NextResponse.json({
