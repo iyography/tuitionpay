@@ -119,6 +119,17 @@ export async function sendPaymentConfirmation(params: PaymentConfirmationParams)
               <p style="font-size: 14px; color: #6b7280; margin-top: 20px; text-align: center;">
                 Please save this email for your records.
               </p>
+
+              <div style="text-align: center; margin-top: 24px;">
+                <a href="https://tuitionpay.ai/parent" style="display: inline-block; background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: white; padding: 14px 28px; border-radius: 30px; text-decoration: none; font-weight: 600; font-size: 15px;">View Your Payment History</a>
+              </div>
+
+              <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; text-align: center;">
+                <p style="font-size: 13px; color: #6b7280; margin: 0 0 8px 0;">Need help? Visit our website or reach out:</p>
+                <a href="https://tuitionpay.ai" style="color: #f59e0b; text-decoration: none; font-weight: 500;">tuitionpay.ai</a>
+                &nbsp;|&nbsp;
+                <a href="mailto:info@tuitionpay.ai" style="color: #f59e0b; text-decoration: none; font-weight: 500;">info@tuitionpay.ai</a>
+              </div>
             </div>
 
             <div style="padding: 20px; text-align: center; color: #9ca3af; font-size: 12px;">
@@ -126,7 +137,7 @@ export async function sendPaymentConfirmation(params: PaymentConfirmationParams)
                 &copy; ${new Date().getFullYear()} TuitionPay. All rights reserved.
               </p>
               <p style="margin: 0;">
-                Questions? Contact us at support@tuitionpay.ai
+                Questions? Contact us at <a href="mailto:info@tuitionpay.ai" style="color: #9ca3af;">info@tuitionpay.ai</a>
               </p>
             </div>
           </body>

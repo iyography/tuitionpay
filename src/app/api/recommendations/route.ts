@@ -142,6 +142,7 @@ export async function POST(request: NextRequest) {
           isBusinessCard: rec.card.is_business_card,
           rewardsType: rec.card.rewards_type,
           processingFee: rec.breakdown.processingFee,
+          applicationUrl: rec.card.application_url,
         }))
 
         const emailSplitStrategy = splitStrategy && splitStrategy.totalSavings > (recommendations[0]?.estimatedSavings || 0)

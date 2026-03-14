@@ -27,6 +27,7 @@ interface CardRecommendation {
   isBusinessCard: boolean
   rewardsType?: string | null
   processingFee?: number
+  applicationUrl?: string | null
 }
 
 interface RecommendationEmailParams {
@@ -99,7 +100,13 @@ export async function sendRecommendationEmail(params: RecommendationEmailParams)
         <p style="margin: 0; font-size: 13px;"><strong>To earn the bonus:</strong> <span style="color: #6b7280;">${card.signupBonusRequirement} in ${card.signupBonusTimeframe}</span></p>
       </div>
 
-      ${card.benefits ? `<p style="margin: 0; font-size: 13px; color: #6b7280;"><strong>Benefits:</strong> ${card.benefits}</p>` : ''}
+      ${card.benefits ? `<p style="margin: 0 0 12px 0; font-size: 13px; color: #6b7280;"><strong>Benefits:</strong> ${card.benefits}</p>` : ''}
+
+      ${card.applicationUrl ? `
+      <div style="text-align: center; margin-top: 12px;">
+        <a href="${card.applicationUrl}" style="display: inline-block; background: ${index === 0 ? 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' : '#374151'}; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px;">Apply for ${card.cardName}</a>
+      </div>
+      ` : ''}
     </div>
   `).join('')
 
@@ -236,7 +243,7 @@ export async function sendRecommendationEmail(params: RecommendationEmailParams)
                 <h4 style="margin: 0 0 8px 0; color: #92400e; font-size: 14px;">Verify Your Offer Before Applying</h4>
                 <p style="margin: 0; font-size: 13px; color: #92400e;">
                   Credit card offers change frequently. Before applying, verify that the signup bonus matches what we've shown here.
-                  <strong>If the offer doesn't match, do not proceed</strong> - contact us at <a href="mailto:support@tuitionpay.ai" style="color: #92400e;">support@tuitionpay.ai</a> and we'll recommend an alternative card with a current offer.
+                  <strong>If the offer doesn't match, do not proceed</strong> - contact us at <a href="mailto:info@tuitionpay.ai" style="color: #92400e;">info@tuitionpay.ai</a> and we'll recommend an alternative card with a current offer.
                 </p>
               </div>
 
@@ -276,7 +283,7 @@ export async function sendRecommendationEmail(params: RecommendationEmailParams)
                 &copy; ${new Date().getFullYear()} TuitionPay. All rights reserved.
               </p>
               <p style="margin: 0;">
-                Questions? Contact us at <a href="mailto:support@tuitionpay.ai" style="color: #9ca3af;">support@tuitionpay.ai</a>
+                Questions? Contact us at <a href="mailto:info@tuitionpay.ai" style="color: #9ca3af;">info@tuitionpay.ai</a>
               </p>
             </div>
           </body>
